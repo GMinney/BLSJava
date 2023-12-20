@@ -1,0 +1,71 @@
+====================
+  G1 CipherSuite
+====================
+
+
+    8.8.1. BLS12-381 G1
+    BLS12381G1_XMD:SHA-256_SSWU_RO_ is defined as follows:
+
+    encoding type: hash_to_curve (Section 3)
+    E: y^2 = x^3 + 4
+    p: 0x1a0111ea397fe69a4b1ba7b6434bacd764774b84f38512bf6730d2a0f6b0f6241eabfffeb153ffffb9feffffffffaaab
+    m: 1
+    k: 128
+    expand_message: expand_message_xmd (Section 5.3.1)
+    H: SHA-256
+    L: 64
+    f: Simplified SWU for AB == 0 (Section 6.6.3)
+    Z: 11
+    E': y'^2 = x'^3 + A' * x' + B', where
+
+    A' = 0x144698a3b8e9433d693a02c96d4982b0ea985383ee66a8d8e8981aefd881ac98936f8da0e0f97f5cf428082d584c1d
+    B' = 0x12e2908d11688030018b12e8753eee3b2016c1f0f24f4070a0b9c14fcef35ef55a23215a316ceaa5d1cc48e98e172be0
+    iso_map: the 11-isogeny map from E' to E given in Appendix E.2
+    h_eff: 0xd201000000010001
+
+BLS12381G1_XMD:SHA-256_SSWU_NU_ is identical to BLS12381G1_XMD:SHA-256_SSWU_RO_, except that the encoding type is encode_to_curve (Section 3).
+
+Note that the h_eff values for these suites are chosen for compatibility with the fast cofactor clearing method described by Scott ([WB19] Section 5).
+
+An optimized example implementation of the Simplified SWU mapping to the curve E' isogenous to BLS12-381 G1 is given in Appendix F.2.
+
+
+
+====================
+  G2 CipherSuite
+====================
+
+8.8.2. BLS12-381 G2
+BLS12381G2_XMD:SHA-256_SSWU_RO_ is defined as follows:
+
+    encoding type: hash_to_curve (Section 3)
+    E: y^2 = x^3 + 4 * (1 + I)
+    base field F is GF(p^m), where
+
+    p: 0x1a0111ea397fe69a4b1ba7b6434bacd764774b84f38512bf6730d2a0f6b0f6241eabfffeb153ffffb9feffffffffaaab
+    m: 2
+    (1, I) is the basis for F, where I^2 + 1 == 0 in F
+    k: 128
+    expand_message: expand_message_xmd (Section 5.3.1)
+    H: SHA-256
+    L: 64
+    f: Simplified SWU for AB == 0 (Section 6.6.3)
+    Z: -(2 + I)
+    E': y'^2 = x'^3 + A' * x' + B', where
+
+    A' = 240 * I
+    B' = 1012 * (1 + I)
+    iso_map: the isogeny map from E' to E given in Appendix E.3
+    h_eff: 0xbc69f08f2ee75b3584c6a0ea91b352888e2a8e9145ad7689986ff031508ffe1329c2f178731db956d82bf015d1212b02ec0ec69d7477c1ae954cbc06689f6a359894c0adebbf6b4e8020005aaa95551
+
+If ENC_VAR begins with "RO", the suite uses hash_to_curve.
+If ENC_VAR begins with "NU", the suite uses encode_to_curve.
+BLS12381G2_XMD:SHA-256_SSWU_NU_ is identical to BLS12381G2_XMD:SHA-256_SSWU_RO_, except that the encoding type is encode_to_curve (Section 3).
+
+Note that the h_eff values for these suites are chosen for compatibility with the fast cofactor clearing method described by Budroni and Pintore ([BP17], Section 4.1), and summarized in Appendix G.3.
+
+An optimized example implementation of the Simplified SWU mapping to the curve E' isogenous to BLS12-381 G2 is given in Appendix F.2.
+
+// A point (X', Y', Z') in Jacobian projective coordinates corresponds to the affine point (x, y) = (X' / Z'^2, Y' / Z'^3);
+the inverse conversion is given by (X', Y', Z') = (x, y, 1).
+To convert (xn, xd, yn, yd) to Jacobian projective coordinates, compute (X', Y', Z') = (xn * xd * yd^2, yn * yd^2 * xd^3, xd * yd).

@@ -1,0 +1,439 @@
+==========================================================================================================================
+Additional notes on the API spec for BLS: https://datatracker.ietf.org/doc/html/draft-irtf-cfrg-bls-signature#definitions
+==========================================================================================================================
+
+
+The BLS signature scheme defines the following API:
+
+KeyGen(IKM) -> SK: a key generation algorithm that takes as input an octet string comprising secret keying material, and outputs a secret key SK.
+
+-- Use the thought keygen:
+        OpenSSL 32byte RNG seeded with cpu perf counter
+        OS RNG 32bytes
+        Output -> seed for keygen 64bytes, see thought github for details
+
+
+SkToPk(SK) -> PK: an algorithm that takes as input a secret key and outputs the corresponding public key.
+
+-- function calcPubKey in Curve.java accomplishes this.
+-- Validate with KeyValidate
+        As an optimization, implementations MAY cache the result of KeyValidate in order to avoid unnecessarily repeating validation for known keys.
+
+        result = KeyValidate(PK)
+
+        Inputs:
+        - PK, a public key in the format output by SkToPk.
+
+        Outputs:
+        - result, either VALID or INVALID
+
+        Procedure:
+        1. xP = pubkey_to_point(PK)
+        2. If xP is INVALID, return INVALID
+        3. If xP is the identity element, return INVALID
+        4. If pubkey_subgroup_check(xP) is INVALID, return INVALID
+        5. return VALID
+
+
+Sign(SK, message) -> signature: a signing algorithm that generates a deterministic signature given a secret key SK and a message.
+
+-- function defined by CoreSign
+
+        The CoreSign algorithm computes a signature from SK, a secret key, and message, an octet string.
+
+        signature = CoreSign(SK, message)
+
+        Inputs:
+        - SK, a secret key in the format output by KeyGen.
+        - message, an octet string.
+
+        Outputs:
+        - signature, an octet string.
+
+        Procedure:
+        1. Q = hash_to_point(message)
+        2. R = SK * Q
+        3. signature = point_to_signature(R)
+        4. return signature
+
+
+
+
+Verify(PK, message, signature) -> VALID or INVALID: a verification algorithm that outputs VALID if signature is a valid signature of message under public key PK, and INVALID otherwise.
+
+-- function defined by CoreVerify
+
+        The CoreVerify algorithm checks that a signature is valid for the octet string message under the public key PK.
+
+        result = CoreVerify(PK, message, signature)
+
+        Inputs:
+        - PK, a public key in the format output by SkToPk.
+        - message, an octet string.
+        - signature, an octet string in the format output by CoreSign.
+
+        Outputs:
+        - result, either VALID or INVALID.
+
+        Procedure:
+        1. R = signature_to_point(signature)
+        2. If R is INVALID, return INVALID
+        3. If signature_subgroup_check(R) is INVALID, return INVALID
+        4. If KeyValidate(PK) is INVALID, return INVALID
+        5. xP = pubkey_to_point(PK)
+        6. Q = hash_to_point(message)
+        7. C1 = pairing(Q, xP)
+        8. C2 = pairing(R, P)
+        9. If C1 == C2, return VALID, else return INVALID
+
+
+
+
+Aggregate((signature_1, ..., signature_n)) -> signature: an aggregation algorithm that aggregates a collection of signatures into a single signature.
+
+-- function defined by Aggregate
+
+        The Aggregate algorithm aggregates multiple signatures into one.
+
+        signature = Aggregate((signature_1, ..., signature_n))
+
+        Inputs:
+        - signature_1, ..., signature_n, octet strings output by
+          either CoreSign or Aggregate.
+
+        Outputs:
+        - signature, an octet string encoding a aggregated signature
+          that combines all inputs; or INVALID.
+
+        Precondition: n >= 1, otherwise return INVALID.
+
+        Procedure:
+        1. aggregate = signature_to_point(signature_1)
+        2. If aggregate is INVALID, return INVALID
+        3. for i in 2, ..., n:
+        4.     next = signature_to_point(signature_i)
+        5.     If next is INVALID, return INVALID
+        6.     aggregate = aggregate + next
+        7. signature = point_to_signature(aggregate)
+        8. return signature
+
+
+
+
+AggregateVerify((PK_1, ..., PK_n), (message_1, ..., message_n), signature) -> VALID or INVALID: an aggregate verification algorithm that outputs VALID if signature is a
+valid aggregated signature for a collection of public keys and messages, and outputs INVALID otherwise.
+
+-- function defined by CoreAggregateVerify
+
+        The CoreAggregateVerify algorithm checks an aggregated signature over several (PK, message) pairs.
+
+        result = CoreAggregateVerify((PK_1, ..., PK_n),
+                                     (message_1, ... message_n),
+                                     signature)
+
+        Inputs:
+        - PK_1, ..., PK_n, public keys in the format output by SkToPk.
+        - message_1, ..., message_n, octet strings.
+        - signature, an octet string output by Aggregate.
+
+        Outputs:
+        - result, either VALID or INVALID.
+
+        Precondition: n >= 1, otherwise return INVALID.
+
+        Procedure:
+        1.  R = signature_to_point(signature)
+        2.  If R is INVALID, return INVALID
+        3.  If signature_subgroup_check(R) is INVALID, return INVALID
+        4.  C1 = 1 (the identity element in GT)
+        5.  for i in 1, ..., n:
+        6.      If KeyValidate(PK_i) is INVALID, return INVALID
+        7.      xP = pubkey_to_point(PK_i)
+        8.      Q = hash_to_point(message_i)
+        9.      C1 = C1 * pairing(Q, xP)
+        10. C2 = pairing(R, P)
+        11. If C1 == C2, return VALID, else return INVALID
+
+========================
+Required inner functions
+========================
+
+Serialization:
+    point_to_signature(R)
+    point_to_pubkey(aggregate)
+        For minimal-signature-size:
+            point_to_pubkey(P) := point_to_octets_E2(P)
+            point_to_signature(P) := point_to_octets_E1(P)
+        For minimal-pubkey-size:
+            point_to_pubkey(P) := point_to_octets_E1(P)
+            point_to_signature(P) := point_to_octets_E2(P)
+
+Deserialization:
+    pubkey_to_point(PK)
+    signature_to_point(signature)
+        For minimal-signature-size:
+            pubkey_to_point(ostr) := octets_to_point_E2(ostr)
+            signature_to_point(ostr) := octets_to_point_E1(ostr)
+        For minimal-pubkey-size:
+            pubkey_to_point(ostr) := octets_to_point_E1(ostr)
+            signature_to_point(ostr) := octets_to_point_E2(ostr)
+
+
+Invoke function 'e':
+    pairing(Q, xP)
+        For minimal-signature-size:
+            pairing(U, V) := e(U, V)
+        For minimal-pubkey-size:
+            pairing(U, V) := e(V, U)
+
+
+Subgroup Check routine:
+    pubkey_subgroup_check(xP)
+    signature_subgroup_check(R)
+        For minimal-signature-size:
+            pubkey_subgroup_check(P) := subgroup_check_E2(P)
+            signature_subgroup_check(P) := subgroup_check_E1(P)
+        For minimal-pubkey-size:
+            pubkey_subgroup_check(P) := subgroup_check_E1(P)
+            signature_subgroup_check(P) := subgroup_check_E2(P)
+
+Mappings (Deterministic Field Functions): (Encoding byte strings to elliptic curves)
+    hash_to_field(msg, count)
+
+
+
+Encodings (Curve Point Functions): (Encoding byte strings to elliptic curves)
+
+
+    encode_to_curve(msg)
+        map_to_curve(u)
+        clear_cofactor(Q)
+
+
+Hash to Curve: Use algorithm to
+    hash_to_curve(msg)
+
+    hash_pubkey_to_point(PK)
+
+    hash_to_point(message)
+
+
+
+
+
+
+===============================
+Helper functions for arithmetic
+===============================
+
+CURVES
+    pointAddition(P1, P2) -> Point Addition
+    pointDoubling(P) -> Point Doubling
+    pointInversion(P) -> Point Negation (Additive Inverse) via BigIntegers
+    montgomeryLadder(k, P) -> Scalar Multiplication
+
+FIELDS
+    fieldAddition() -> Modular Addition
+    fieldMultiplication() -> Modular Multiplication
+    fieldExponentiation() -> Modular Exponentiation
+    fieldInversion() -> Modular Inversion
+    fieldSquareRoot() -> Tonelli–Shanks algorithm
+
+MAPPING
+    map_to_curve_simple_swu()
+    iso_map()
+
+===============================
+Algorithms used in this library
+===============================
+
+Montgomery Ladder - Scalar Multiplication
+Fouque-Tibouchi - Hashing to the curve
+Simplified Shallue-van de Woestijne-Ulas method - Hashing to curve
+Tonelli–Shanks algorithm - Field Square Root
+
+===============================
+  Choosing a mapping function
+===============================
+
+Choosing a mapping function
+
+   This section gives brief guidelines on choosing a mapping function
+   for a given elliptic curve.  Note that the suites given in Section 8
+   are recommended mappings for the respective curves.
+
+   If the target elliptic curve is a Montgomery curve (Section 6.7), the
+   Elligator 2 method (Section 6.7.1) is recommended.  Similarly, if the
+   target elliptic curve is a twisted Edwards curve (Section 6.8), the
+   twisted Edwards Elligator 2 method (Section 6.8.2) is recommended.
+
+   The remaining cases are Weierstrass curves.  For curves supported by
+   the Simplified SWU method (Section 6.6.2), that mapping is the
+   recommended one.  Otherwise, the Simplified SWU method for AB == 0
+   (Section 6.6.3) is recommended if the goal is best performance, while
+   the Shallue-van de Woestijne method (Section 6.6.1) is recommended if
+   the goal is simplicity of implementation.  (The reason for this
+   distinction is that the Simplified SWU method for AB == 0 requires
+   implementing an isogeny map in addition to the mapping function,
+   while the Shallue-van de Woestijne method does not.)
+
+   The Shallue-van de Woestijne method (Section 6.6.1) works with any
+   curve, and may be used in cases where a generic mapping is required.
+   Note, however, that this mapping is almost always more
+   computationally expensive than the curve-specific recommendations
+   above.
+
+
+===============================
+     Suites for hashing
+===============================
+
+This section lists recommended suites for hashing to standard elliptic curves.
+
+   A hash-to-curve suite fully specifies the procedure for hashing byte
+   strings to points on a specific elliptic curve group.  Section 8.1
+   describes how to implement a suite.  Applications that require
+   hashing to an elliptic curve should use either an existing suite or a
+   new suite specified as described in Section 8.9.
+
+   All applications using a hash-to-curve suite MUST choose a domain
+   separation tag (DST) in accordance with the guidelines in
+   Section 3.1.  In addition, applications whose security requires a
+   random oracle that returns uniformly random points on the target
+   curve MUST use a suite whose encoding type is hash_to_curve; see
+   Section 3 and immediately below for more information.
+
+===================================
+Implementing a hash-to-curve suite
+===================================
+
+Implementing a hash-to-curve suite
+
+   A hash-to-curve suite requires the following functions.  Note that
+   some of these require utility functions from Section 4.
+
+   1.  Base field arithmetic operations for the target elliptic curve,
+       e.g., addition, multiplication, and square root.
+
+   2.  Elliptic curve point operations for the target curve, e.g., point
+       addition and scalar multiplication.
+
+   3.  The hash_to_field function; see Section 5.  This includes the
+       expand_message variant (Section 5.3) and any constituent hash
+       function or XOF.
+
+   4.  The suite-specified mapping function; see the corresponding
+       subsection of Section 6.
+
+   5.  A cofactor clearing function; see Section 7.  This may be
+       implemented as scalar multiplication by h_eff or as a faster
+       equivalent method.
+
+   6.  The desired encoding function; see Section 3.  This is either
+       hash_to_curve or encode_to_curve.
+
+
+=============================================
+G1 and G2 hash-to-curve suites for BLS12-381
+=============================================
+
+# BLS12-381 G1
+
+   BLS12381G1_XMD:SHA-256_SSWU_RO_ is defined as follows:
+
+   *  encoding type: hash_to_curve (Section 3)
+
+   *  E: y^2 = x^3 + 4
+
+   *  p: 0x1a0111ea397fe69a4b1ba7b6434bacd764774b84f38512bf6730d2a0f6b0f
+      6241eabfffeb153ffffb9feffffffffaaab
+
+   *  m: 1
+
+   *  k: 128
+
+   *  expand_message: expand_message_xmd (Section 5.3.1)
+
+   *  H: SHA-256
+
+   *  L: 64
+
+   *  f: Simplified SWU for AB == 0 (Section 6.6.3)
+
+   *  Z: 11
+
+   *  E': y'^2 = x'^3 + A' * x' + B', where
+
+      -  A' = 0x144698a3b8e9433d693a02c96d4982b0ea985383ee66a8d8e8981aef
+         d881ac98936f8da0e0f97f5cf428082d584c1d
+
+      -  B' = 0x12e2908d11688030018b12e8753eee3b2016c1f0f24f4070a0b9c14f
+         cef35ef55a23215a316ceaa5d1cc48e98e172be0
+
+   *  iso_map: the 11-isogeny map from E' to E given in Appendix E.2
+
+   *  h_eff: 0xd201000000010001
+
+   BLS12381G1_XMD:SHA-256_SSWU_NU_ is identical to BLS12381G1_XMD:SHA-
+   256_SSWU_RO_, except that the encoding type is encode_to_curve
+   (Section 3).
+
+   Note that the h_eff values for these suites are chosen for
+   compatibility with the fast cofactor clearing method described by
+   Scott ([WB19] Section 5).
+
+   An optimized example implementation of the Simplified SWU mapping to
+   the curve E' isogenous to BLS12-381 G1 is given in Appendix F.2.
+
+# BLS12-381 G2
+
+   BLS12381G2_XMD:SHA-256_SSWU_RO_ is defined as follows:
+
+   *  encoding type: hash_to_curve (Section 3)
+
+   *  E: y^2 = x^3 + 4 * (1 + I)
+
+   *  base field F is GF(p^m), where
+
+      -  p: 0x1a0111ea397fe69a4b1ba7b6434bacd764774b84f38512bf6730d2a0f6
+         b0f6241eabfffeb153ffffb9feffffffffaaab
+
+      -  m: 2
+
+      -  (1, I) is the basis for F, where I^2 + 1 == 0 in F
+
+   *  k: 128
+
+   *  expand_message: expand_message_xmd (Section 5.3.1)
+
+   *  H: SHA-256
+
+   *  L: 64
+
+   *  f: Simplified SWU for AB == 0 (Section 6.6.3)
+
+   *  Z: -(2 + I)
+
+   *  E': y'^2 = x'^3 + A' * x' + B', where
+
+      -  A' = 240 * I
+
+      -  B' = 1012 * (1 + I)
+
+   *  iso_map: the isogeny map from E' to E given in Appendix E.3
+
+   *  h_eff: 0xbc69f08f2ee75b3584c6a0ea91b352888e2a8e9145ad7689986ff0315
+      08ffe1329c2f178731db956d82bf015d1212b02ec0ec69d7477c1ae954cbc06689
+      f6a359894c0adebbf6b4e8020005aaa95551
+
+   BLS12381G2_XMD:SHA-256_SSWU_NU_ is identical to BLS12381G2_XMD:SHA-
+   256_SSWU_RO_, except that the encoding type is encode_to_curve
+   (Section 3).
+
+   Note that the h_eff values for these suites are chosen for
+   compatibility with the fast cofactor clearing method described by
+   Budroni and Pintore ([BP17], Section 4.1), and summarized in
+   Appendix G.3.
+
+   An optimized example implementation of the Simplified SWU mapping to
+   the curve E' isogenous to BLS12-381 G2 is given in Appendix F.2.

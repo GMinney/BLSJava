@@ -1,0 +1,19 @@
+The sample code in this section uses a different interface than the mappings of Section 6. Specifically, each mapping function in this section has the following signature:
+
+    (xn, xd, yn, yd) = map_to_curve(u)
+
+The resulting affine point (x, y) is given by (xn / xd, yn / yd).
+
+The reason for this modified interface is that it enables further optimizations when working with points in a projective coordinate system. This is desirable, for example, when
+ the resulting point will be immediately multiplied by a scalar, since most scalar multiplication algorithms operate on projective points.
+
+Projective coordinates are also useful when implementing random oracle encodings (Section 3). One reason is that, in general, point addition is faster using projective coordinates.
+ Another reason is that, for Weierstrass curves, projective coordinates allow using complete addition formulas [RCB16]. This is especially convenient when implementing a constant-time encoding,
+ because it eliminates the need for a special case when Q0 == Q1, which incomplete addition formulas usually do not handle.
+
+The following are two commonly used projective coordinate systems and the corresponding conversions:
+
+A point (X, Y, Z) in homogeneous projective coordinates corresponds to the affine point (x, y) = (X / Z, Y / Z); the inverse conversion is given by (X, Y, Z) = (x, y, 1). To convert (xn, xd, yn, yd)
+ to homogeneous projective coordinates, compute (X, Y, Z) = (xn * yd, yn * xd, xd * yd).
+A point (X', Y', Z') in Jacobian projective coordinates corresponds to the affine point (x, y) = (X' / Z'^2, Y' / Z'^3); the inverse conversion is given by (X', Y', Z') = (x, y, 1).
+To convert (xn, xd, yn, yd) to Jacobian projective coordinates, compute (X', Y', Z') = (xn * xd * yd^2, yn * yd^2 * xd^3, xd * yd).
