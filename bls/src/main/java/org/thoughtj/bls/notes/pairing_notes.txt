@@ -1,0 +1,44 @@
+// undefined when its input points are not in the prime-order subgroups of E1 and E2. The resulting behavior is unpredictable, and may enable forgeries.
+// A pairing is defined as a bilinear map e: (G_1, G_2) -> G_T satisfying the following properties:
+// Bilinearity: for any S in G_1, T in G_2, and integers K and L, e([K]S, [L]T) = e(S, T)^{K * L}.
+// Non-degeneracy: for any T in G_2, e(S, T) = 1 if and only if S = O_E. Similarly, for any S in G_1, e(S, T) = 1 if and only if T = O_E.
+// a pairing over BLS curves constructs optimal Ate pairings
+//
+//
+//   BLS12:
+//       p = (t - 1)^2 * (t^4 - t^2 + 1) / 3 + t
+//       r = t^4 - t^2 + 1
+//
+//   BLS12-381:
+//      t = -2^63 - 2^62 - 2^60 - 2^57 - 2^48 - 2^16
+//      where the size of p becomes 381-bit length
+//
+//
+//  Functions in the Optimal Ate Pairing
+
+
+
+// Hamming weight
+// Bitdepth L = "65"
+// t should have security level for bls12-381 with roughly 126 bits, AES-128 would be roughly 64 bits
+
+// u = G2_CONST_H_EFF;
+// q = p_characteristic which is roughly 2^381 bit depth
+// t = t must be 1 (mod 3). Turns out this is the G2_CONST_H_EFF
+// p = p_characteristic
+// r = group_order_r
+// p(t) =
+// r(t) =
+// t(sub)r(t) =
+// πp = frobenius endomorphism given by πp(x, y) = (xp, yp).
+
+// T = Intermediary point
+// P = the point_on_G1
+// s =
+// f =
+
+// → is part of a type signature
+// For sets X and Y, f:X→Y is a function "from X to Y ", meaning that f has domain X and codomain Y.
+
+// ↦ is part of a function definition
+

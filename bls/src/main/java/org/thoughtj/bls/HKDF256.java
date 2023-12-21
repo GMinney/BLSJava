@@ -3,9 +3,9 @@ package org.thoughtj.bls;
 public class HKDF256 {
 
     public final static short HASH_LEN = 64;
-    protected HKDF256(long cPtr, boolean cMemoryOwn) {
 
-    }
+    // HKDF256 is the class responsible for KeyGen
+
 
     public static void extract(byte[] prk_output, byte[] salt, long saltLen, byte[] ikm, long ikm_len) {
 

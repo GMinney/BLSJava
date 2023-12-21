@@ -5,7 +5,7 @@ import static org.thoughtj.bls.arith.Params.*;
 import static org.thoughtj.bls.arith.Field.*;
 
 import java.math.BigInteger;
-public class Curve {
+public abstract class Curve {
 
     /**
      * calcPubKey takes a Private Key k and returns the corresponding Public Key using the generator point determined by the BLS12-381 Curve
@@ -109,103 +109,6 @@ public class Curve {
         return new Point(point.x, y.negate());
 
     }
-
-    public static boolean pairing(Point point_on_G1, Point point_on_G2) {
-        // undefined when its input points are not in the prime-order subgroups of E1 and E2. The resulting behavior is unpredictable, and may enable forgeries.
-        // A pairing is defined as a bilinear map e: (G_1, G_2) -> G_T satisfying the following properties:
-        // Bilinearity: for any S in G_1, T in G_2, and integers K and L, e([K]S, [L]T) = e(S, T)^{K * L}.
-        // Non-degeneracy: for any T in G_2, e(S, T) = 1 if and only if S = O_E. Similarly, for any S in G_1, e(S, T) = 1 if and only if T = O_E.
-        // a pairing over BLS curves constructs optimal Ate pairings
-        //
-        //
-        //   BLS12:
-        //       p = (t - 1)^2 * (t^4 - t^2 + 1) / 3 + t
-        //       r = t^4 - t^2 + 1
-        //
-        //   BLS12-381:
-        //      t = -2^63 - 2^62 - 2^60 - 2^57 - 2^48 - 2^16
-        //      where the size of p becomes 381-bit length
-        //
-        //
-        //  Functions in the Optimal Ate Pairing
-        BigInteger k = EMBEDDING_DEGREE;
-        BigInteger p_characteristic = G1_CONST_P;
-        BigInteger group_order_r = G1_CONST_R;
-        BigInteger t_depth = G1_CONST_H; // Check this
-        BigInteger t = G2_CONST_H_EFF; //frobenius();
-        // Hamming weight
-        // Bitdepth L = "65"
-        // t should have security level for bls12-381 with roughly 126 bits, AES-128 would be roughly 64 bits
-
-        // u = G2_CONST_H_EFF;
-        // q = p_characteristic which is roughly 2^381 bit depth
-        // t = t must be 1 (mod 3). Turns out this is the G2_CONST_H_EFF
-        // p = p_characteristic
-        // r = group_order_r
-        // p(t) =
-        // r(t) =
-        // t(sub)r(t) =
-        // πp = frobenius endomorphism given by πp(x, y) = (xp, yp).
-
-        // T = Intermediary point
-        // P = the point_on_G1
-        // s =
-        // f =
-
-        // → is part of a type signature
-        // For sets X and Y, f:X→Y is a function "from X to Y ", meaning that f has domain X and codomain Y.
-
-        // ↦ is part of a function definition
-
-
-        Point optimal_ate_pairing;
-        s = 6t + 2 as s = ∑L−1 i=0 si2i , where si ∈ {−1, 0, 1};
-        BigInteger s = fieldMultiplication(t, BigInteger.valueOf(6), BigInteger.valueOf(12));
-        Point T = point_on_G2; // Q is the point_on_G2
-        f = 1;
-
-
-        // Miller Loop - calculates the value of the rational function at point P for function f6t+2,Q
-        // It involves iterating over the points on the curve and evaluating certain line functions.
-        for (int i = L − 2; i <=0; i--){
-            // Doubling step
-            f = (f · lT ,T (point_on_G1));
-            T = fieldMultiplication(T, 2, 12);
-        }
-
-        if (si == −1) {
-            // addition step
-            f = (f · lT , −point_on_G2(point_on_G1));
-            T = T − point_on_G2;
-        }
-        else if (si = 1) {
-            // addition step
-            f = (f · lT , point_on_G2(point_on_G1));
-            T = T + point_on_G2;
-        }
-
-        // Frobenius application and final addition step
-        Q1 = (πp(point_on_G2));
-        Q2 = (πp2 (point_on_G2));
-
-        f = (f · lT ,Q1(point_on_G1));
-        T = T + Q1;
-
-        f = (f · lT ,−Q2(point_on_G1));
-        T = T − Q2;
-
-        // Final exponentiation using frobenius
-        Point f = fp12^(−1/r);
-
-
-        return optimal_ate_pairing;
-
-
-    }
-
-
-
-
 
 
 }

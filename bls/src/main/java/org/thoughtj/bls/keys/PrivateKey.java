@@ -1,6 +1,5 @@
 package org.thoughtj.bls.keys;
 
-import org.thoughtj.bls.BLS;
 import org.thoughtj.bls.elements.G1Element;
 import org.thoughtj.bls.elements.G2Element;
 import org.thoughtj.bls.utils.HexUtils;
@@ -17,7 +16,7 @@ public class PrivateKey {
     // Private members
 
     // Get the logger attached to the BLS class
-    private static final Logger log = LoggerFactory.getLogger(BLS.class);
+    // private static final Logger log = LoggerFactory.getLogger(BLS.class);
 
     // When this class is instantiated, allocate a 32byte byte array with 0's
     private BigInteger keydata = new BigInteger(ByteBuffer.allocate(PRIVATE_KEY_SIZE).array());
@@ -30,10 +29,12 @@ public class PrivateKey {
     // Methods
     public static PrivateKey fromSeedBIP32(byte[] seed) {
         // Generate a random private key from a provided seed
+        return null;
     }
 
     public static PrivateKey randomPrivateKey() {
         // Generate a random private key from a randomly generated seed
+        return null;
     }
 
     public static PrivateKey fromBytes(byte[] bytes, boolean modOrder) {
@@ -86,8 +87,7 @@ public class PrivateKey {
 
     public static PrivateKey aggregate(PrivateKeyVector privateKeys) {
         // Aggregate a list of private keys into one. A core operation of BLS
-        PrivateKey aggregateKey;
-        return aggregateKey;
+        return null;
     }
 
 
@@ -104,16 +104,16 @@ public class PrivateKey {
     }
     // getG2Element returns a signature of 96bytes corresponding the Private Key of 32bytes
     public G2Element getG2Element() {
-
+        return null;
     }
 
     public G2Element getG2Power(G2Element element) {
-
+        return null;
     }
 
     // Serialize a PrivateKey into a byte array with fLegacy
     public byte[] serialize(boolean fLegacy) {
-
+        return null;
     }
 
     // Serialize a PrivateKey into a byte array
@@ -134,18 +134,17 @@ public class PrivateKey {
 
     // Sign a message with a private key and return a G2Element and choose the Legacy scheme is boolean is true
     public G2Element signG2(byte[] msg, long len, byte[] dst, long dst_len, boolean fLegacy) {
-
+        return null;
     }
 
     // Sign a message with a private key and return a G2Element
     public G2Element signG2(byte[] msg, long len, byte[] dst, long dst_len) {
-
+        return null;
     }
 
     // Null check for keydata
     public boolean hasKeyData() {
         return this.keydata != null;
     }
-
 
 }

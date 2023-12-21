@@ -1,10 +1,10 @@
 package org.thoughtj.bls.schemes;
 
-import org.thoughtj.bls.*;
 import org.thoughtj.bls.elements.G1Element;
 import org.thoughtj.bls.elements.G1ElementVector;
 import org.thoughtj.bls.elements.G2Element;
 import org.thoughtj.bls.keys.PrivateKey;
+import org.thoughtj.bls.keys.Uint8VectorVector;
 
 public class AugSchemeMPL extends CoreMPL {
 
@@ -21,12 +21,8 @@ public class AugSchemeMPL extends CoreMPL {
 
 
     // Constructor
-    protected AugSchemeMPL(long cPtr, boolean cMemoryOwn) {
-        super();
-    }
-    // Constructor
     public AugSchemeMPL() {
-
+        super();
     }
 
 
@@ -35,21 +31,98 @@ public class AugSchemeMPL extends CoreMPL {
     }
     public G2Element sign(PrivateKey seckey, byte[] message) {
 
+//        Inputs:
+//        - SK, a secret key in the format output by KeyGen.
+//        - message, an octet string.
+//
+//        Outputs:
+//        - signature, an octet string.
+//
+//        Procedure:
+//        1. PK = SkToPk(SK)
+//        2. return CoreSign(SK, PK || message)
+
     }
 
     public G2Element sign(PrivateKey seckey, byte[] message, G1Element prepend_pk) {
+
+//        Inputs:
+//        - SK, a secret key in the format output by KeyGen.
+//        - message, an octet string.
+//
+//        Outputs:
+//        - signature, an octet string.
+//
+//        Procedure:
+//        1. PK = SkToPk(SK)
+//        2. return CoreSign(SK, PK || message)
 
     }
 
     public boolean verify(byte[] pubkey, byte[] message, byte[] signature) {
 
+//        result = Verify(PK, message, signature)
+//
+//        Inputs:
+//        - PK, a public key in the format output by SkToPk.
+//                - message, an octet string.
+//        - signature, an octet string in the format output by CoreSign.
+//
+//        Outputs:
+//        - result, either VALID or INVALID.
+//
+//                Procedure:
+//        1. return CoreVerify(PK, PK || message, signature)
+
     }
 
     public boolean aggregateVerify(Uint8VectorVector pubkeys, Uint8VectorVector messages, byte[] signature) {
 
+//        result = AggregateVerify((PK_1, ..., PK_n),
+//        (message_1, ..., message_n),
+//        signature)
+//
+//        Inputs:
+//        - PK_1, ..., PK_n, public keys in the format output by SkToPk.
+//                - message_1, ..., message_n, octet strings.
+//                - signature, an octet string output by Aggregate.
+//
+//                Outputs:
+//        - result, either VALID or INVALID.
+//
+//                Precondition: n >= 1, otherwise return INVALID.
+//
+//                Procedure:
+//        1. for i in 1, ..., n:
+//        2.     mprime_i = PK_i || message_i
+//        3. return CoreAggregateVerify((PK_1, ..., PK_n),
+//        (mprime_1, ..., mprime_n),
+//        signature)
+
     }
 
     public boolean aggregateVerify(G1ElementVector pubkeys, Uint8VectorVector messages, G2Element signature) {
+
+//        result = AggregateVerify((PK_1, ..., PK_n),
+//        (message_1, ..., message_n),
+//        signature)
+//
+//        Inputs:
+//        - PK_1, ..., PK_n, public keys in the format output by SkToPk.
+//                - message_1, ..., message_n, octet strings.
+//                - signature, an octet string output by Aggregate.
+//
+//                Outputs:
+//        - result, either VALID or INVALID.
+//
+//                Precondition: n >= 1, otherwise return INVALID.
+//
+//                Procedure:
+//        1. for i in 1, ..., n:
+//        2.     mprime_i = PK_i || message_i
+//        3. return CoreAggregateVerify((PK_1, ..., PK_n),
+//        (mprime_1, ..., mprime_n),
+//        signature)
 
     }
 

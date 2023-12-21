@@ -7,9 +7,11 @@ import java.security.SecureRandom;
 
 import static org.thoughtj.bls.arith.Curve.calcPubKey;
 import static org.thoughtj.bls.arith.Curve.pointAddition;
-import static org.thoughtj.bls.arith.Point.*;
+import static org.thoughtj.bls.arith.Conversion.*;
+import static org.thoughtj.bls.arith.Mapping.pairing;
+import static org.thoughtj.bls.arith.Verify.*;
 
-public class CoreAPI {
+public abstract class CoreAPI {
 
     /**
      * KeyGen <br>
@@ -44,7 +46,7 @@ public class CoreAPI {
      * @return
      */
     public static byte[] SkToPk(byte[] secret_key){
-        BigInteger element = Point.octetToFieldElement(secret_key);
+        BigInteger element = octetToFieldElement(secret_key);
         return calcPubKey(element).getBytes();
     }
 
@@ -60,16 +62,13 @@ public class CoreAPI {
     public static boolean KeyValidate(byte[] public_key){
         // subgroup check needs to choose the correct one based on either min-pubkey-sizes or min-signature-sizes
         Point xP = octetToCurvePointG1(public_key, true);
-        if (xP == INVALID) {
-            return INVALID;
+        if (xP == null) {
+            return false;
         }
-        if (xP == the identity element) {
-            return INVALID;
+        if (xP == Params.POINT_AT_INFINITY) {
+            return false;
         }
-        if (subgroup_check_E1(xP) == INVALID) {
-            return INVALID;
-        }
-        return VALID;
+        return subgroup_check_E1(xP);
     }
 
     /**
@@ -103,26 +102,21 @@ public class CoreAPI {
      */
     public static boolean CoreVerify(byte[] pub_key, byte[] message, byte[] signature) {
         Point R = octetToCurvePointG2(signature, true);
-        if (R == INVALID){
-            return INVALID;
+        if (R == null){
+            return false;
         }
-        if (subgroup_check_E2(R) == INVALID){
-            return INVALID;
+        if (!subgroup_check_E2(R)){
+            return false;
         }
-        if (KeyValidate(pub_key) == INVALID) {
-            return INVALID;
+        if (!KeyValidate(pub_key)) {
+            return false;
         }
         Point xP = octetToCurvePointG1(pub_key, true);
-        Point Q = octetToCurvePointG1(message);
-        C1 = pairing(Q, xP);
+        Point Q = octetToCurvePointG1(message, true);
+        Point C1 = pairing(Q, xP);
         // P is the generator for either P1 or P2 based on the signature scheme
-        C2 = pairing(R, Params.G1_CONST_P);
-        if (C1 == C2){
-            return VALID;
-        }
-        else {
-            return INVALID;
-        }
+        Point C2 = pairing(R, Params.G1_CONST_P); // Use x and y
+        return C1 == C2;
     }
 
     /**
@@ -135,13 +129,13 @@ public class CoreAPI {
         // signature_to_point: uses the function octets_to_point_E1 for minimal-signature-size, uses the function octets_to_point_E2 for minimal-pubkey-size
         // Since relic uses minimum public key sizes, we will use the E2 function
         Point aggregate = octetToCurvePointG2(signatures[0], true);
-        if (aggregate == INVALID) {
-            return INVALID
+        if (aggregate == null) {
+            return null;
         }
         for (byte[] i : signatures){
             Point next = octetToCurvePointG2(signatures[i], true);
-            if (next == INVALID) {
-                return INVALID;
+            if (next == null) {
+                return null;
             }
             aggregate = pointAddition(aggregate, next);
         }
@@ -156,46 +150,23 @@ public class CoreAPI {
      */
     public static boolean CoreAggregateVerify(byte[][] public_keys, byte[][] messages, byte[] aggregate_signature){
         Point R = octetToCurvePointG2(aggregate_signature, true);
-        if (R == INVALID) {
-            return INVALID;
+        if (R == null) {
+            return false;
         }
-        if (subgroup_check_E2(R) == INVALID) {
-            return INVALID;
+        if (!subgroup_check_E2(R)) {
+            return false;
         }
-        C1 = 1 //(the identity element in GT)
-        for (byte[] public_key : public_keys) {
-            if (KeyValidate(public_key) == INVALID) {
-                return INVALID;
+        Point C1 = Params.POINT_AT_INFINITY; //(the identity element in GT)
+        for (int i = 0; i <= public_keys.length; i++) {
+            if (!KeyValidate(public_keys[i])) {
+                return false;
             }
-            Point xP = octetToCurvePointG1(public_key, true);
-            Point Q = octetToCurvePointG1(message_i, true);
-            C1 = C1 * pairing(Q, xP);
+            Point xP = octetToCurvePointG1(public_keys[i], true);
+            Point Q = octetToCurvePointG1(messages[i], true);
+            Point C1 = C1 * pairing(Q, xP); // point - modular multiplication
         }
-        C2 = pairing(R, P);
-        if (C1 == C2) {
-            return VALID;
-        }
-        else {
-            return INVALID;
-        }
+        Point C2 = pairing(R, P);
+        return C1 == C2;
     }
-    /*
-
-     {
-     {01000101, 010100100, 01001010} = pub_key1
-     {01000101, 010100100, 01001010} = pub_key2
-     {01000101, 010100100, 01001010} = pub_key3
-     {01000101, 010100100, 01001010}
-     {01000101, 010100100, 01001010}
-     {01000101, 010100100, 01001010}
-
-
-
-
-
-     }
-
-     */
-
 
 }

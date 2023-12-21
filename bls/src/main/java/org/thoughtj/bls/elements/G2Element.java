@@ -1,19 +1,24 @@
 package org.thoughtj.bls.elements;
 
+import java.math.BigInteger;
+import java.nio.ByteBuffer;
+
 public class G2Element {
 
     // A G2Element is a signature that is 96 bytes in size or 768 bits in compressed form
     // A G2Element is a signature that is 192 bytes in size or 1536 bits in uncompressed form
-    // Relic uses Minimum pubkey sizes and compression
+    // Relic uses Minimum pubkey sizes and compression - check notes for details
     public final static int SIZE = 96;
 
-    protected G2Element(long cPtr, boolean cMemoryOwn) {
+    private BigInteger g2_element;
 
+    // Constructors
+    public G2Element() {
+        this.g2_element = new BigInteger(ByteBuffer.allocate(SIZE).array());
     }
 
-
-    public G2Element() {
-
+    public G2Element(G2Element other) {
+        this.g2_element = other.g2_element;
     }
 
     public static G2Element fromBytes(byte[] bytes, boolean fLegacy) {
@@ -40,6 +45,8 @@ public class G2Element {
 
     }
 
+
+    // Functions and Methods
     public static G2Element generator() {
 
     }
@@ -68,9 +75,7 @@ public class G2Element {
 
     }
 
-    public G2Element(G2Element other) {
 
-    }
 
 }
 

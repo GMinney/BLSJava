@@ -1,4 +1,4 @@
-package org.thoughtj.bls;
+package org.thoughtj.bls.keys;
 
 public class Uint8VectorVector extends java.util.AbstractList<Uint8Vector> implements java.util.RandomAccess {
 

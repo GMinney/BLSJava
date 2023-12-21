@@ -1,6 +1,6 @@
 package org.thoughtj.bls.utils;
 
-import org.thoughtj.bls.Uint8Vector;
+import org.thoughtj.bls.keys.Uint8Vector;
 public class ByteVector extends Uint8Vector {
 
     public ByteVector() {

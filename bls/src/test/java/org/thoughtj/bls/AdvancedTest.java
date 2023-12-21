@@ -8,6 +8,7 @@ package org.thoughtj.bls;
 
 import org.dashj.bls.Utils.*;
 import org.junit.Test;
+import org.thoughtj.bls.keys.Uint8VectorVector;
 
 import static org.junit.Assert.assertTrue;
 

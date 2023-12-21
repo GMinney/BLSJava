@@ -1,80 +1,12 @@
 package org.thoughtj.bls.arith;
 
-import org.thoughtj.bls.schemes.BasicSchemeMPL;
-
 import java.math.BigInteger;
 
-import static org.thoughtj.bls.arith.Curve.pointAddition;
-import static org.thoughtj.bls.arith.Point.integerToOctet;
-import static org.thoughtj.bls.arith.Point.octetToInteger;
+import static org.thoughtj.bls.arith.Field.fieldMultiplication;
+import static org.thoughtj.bls.arith.Params.*;
+import static org.thoughtj.bls.arith.Conversion.*;
 
-public class Mapping {
-
-    /**
-     * TODO: WRITE A BETTER DESCRIPTION <br>
-     * hashToCurveG1
-     * When the signature variant is minimal-signature-size, this function MUST output a point in G1.
-     * @param message The message to be mapped input as an octet string (byte[])
-     * @return a {@link Point}
-     */
-    public static Point hashToCurvePointG1(byte[] message) {
-        Point u = hashToField(message, 2);
-        Point Q0 = mapToCurve(u[0]);
-        Point Q1 = mapToCurve(u[1]);
-        Point R = pointAddition(Q0, Q1);
-        return clearCofactor(R);
-    }
-
-    /**
-     * TODO: WRITE A BETTER DESCRIPTION <br>
-     * hashToCurveG2
-     * When the signature variant is minimal-pubkey size, this function MUST output a point in G2.
-     * @param signature The message to be mapped input as an octet string (byte[])
-     * @return a {@link Point}
-     */
-    public static Point hashToCurvePointG2(byte[] signature) {
-        Point u = hashToField(signature, 2);
-        Point Q0 = mapToCurve(u[0]);
-        Point Q1 = mapToCurve(u[1]);
-        Point R = pointAddition(Q0, Q1);
-        return clearCofactor(R);
-    }
-
-
-    /**
-     * TODO: WRITE A BETTER DESCRIPTION <br>
-     * encodeToCurve
-     * @param input
-     * @return
-     */
-    public static Point encodeToCurve(byte[] input) {
-        Point u = hashToField(msg, 1);
-        Point Q = mapToCurve(u[0]);
-        return clearCofactor(Q);
-    }
-
-    /**
-     * TODO: WRITE A BETTER DESCRIPTION <br>
-     * <strong>**Need two, one for G1Element and one for G2Elements depending on whether we're using a public key or private key**</strong>
-     * @param msg
-     * @param num_elements
-     * @return
-     */
-    private static Point hashToField(byte[] msg, int num_elements) {
-        int len_in_bytes = num_elements * m * L; // m is the extension degree for the curve which is a const, L is the ceil((ceil(log2(p)) + k) / 8 where k is is the bit security level (128)
-        byte[] uniform_bytes = expand_message_xmd(BasicSchemeMPL.getCIPHERSUITE_ID(), msg, len_in_bytes); //Determines bytes
-        for (int i ; i <= 0; i++) {
-            for (j in (0, ..., m - 1)) {
-                elm_offset = L * (j + i * m);
-                tv = substr(uniform_bytes, elm_offset, L);
-                e_j = octetToInteger(tv) mod p;
-            }
-            u_i = (e_0, ..., e_(m - 1));
-        }
-        return (u_0, ..., u_(num_elements - 1))
-    }
-
-    //
+public abstract class Mapping {
 
     /**
      * TODO: WRITE A BETTER DESCRIPTION <br>
@@ -123,7 +55,7 @@ public class Mapping {
      * @param u
      * @return
      */
-    private static Point mapToCurve(BigInteger u) {
+    public static Point mapToCurve(BigInteger u) {
         // Call the mapping function for BLS12_381
     }
 
@@ -256,7 +188,7 @@ public class Mapping {
      * @param input
      * @return
      */
-    private static Point clearCofactorG2(Point input) {
+    public static Point clearCofactor(Point input) {
         // Can just do this - h_eff * P
 
         // frobenius(x)
@@ -323,4 +255,65 @@ public class Mapping {
 
     }
 
+    public static Point pairing(Point point_on_G1, Point point_on_G2) {
+
+        BigInteger k = EMBEDDING_DEGREE;
+        BigInteger p_characteristic = G1_CONST_P;
+        BigInteger group_order_r = G1_CONST_R;
+        BigInteger t_depth = G1_CONST_H; // Check this
+        BigInteger t = G2_CONST_H_EFF; //frobenius();
+
+        Point optimal_ate_pairing;
+        s = 6 t + 2 as s = ∑L−1 i = 0 si2i, where si ∈{−1, 0, 1
+        } ;
+        BigInteger s = fieldMultiplication(t, BigInteger.valueOf(6), BigInteger.valueOf(12));
+        Point T = point_on_G2; // Q is the point_on_G2
+        f = 1;
+
+
+        // Miller Loop - calculates the value of the rational function at point P for function f6t+2,Q
+        // It involves iterating over the points on the curve and evaluating certain line functions.
+        for (int i = L −2; i <= 0;i--) {
+            // Doubling step
+            f = (f ·lT, T(point_on_G1));
+            T = fieldMultiplication(T, 2, 12);
+        }
+
+        if (si == −1) {
+            // addition step
+            f = (f ·lT , −point_on_G2(point_on_G1));
+            T = T −point_on_G2;
+        }
+        if (si = 1) {
+            // addition step
+            f = (f ·lT, point_on_G2(point_on_G1));
+            T = T + point_on_G2;
+        }
+
+        // Frobenius application and final addition step
+        Point Q1 = (πp(point_on_G2));
+        Point Q2 = (πp2(point_on_G2));
+
+        f = (f ·lT, Q1(point_on_G1));
+        T = T + Q1;
+
+        f = (f ·lT ,−Q2(point_on_G1));
+        T = T −Q2;
+
+        // Final exponentiation using frobenius
+        Point f = fp12 ^ (−1 / r);
+
+
+        return optimal_ate_pairing;
+
+    }
+
+    private static Point frobenius(){
+
+
+        return point;
+    }
+
 }
+
+

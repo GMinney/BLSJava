@@ -1,15 +1,16 @@
 package org.thoughtj.bls;
 
+import org.thoughtj.bls.arith.Point;
+
 public class ChainCode {
 
     // ChainCode Size is 32 bytes
     public final static int SIZE = 32;
 
-    protected ChainCode(long cPtr, boolean cMemoryOwn) {
+    private Point chaincode;
 
-    }
-
-    public static ChainCode fromBytes(byte[] bytes) {
+    // Constructors
+    public ChainCode() {
 
     }
 
@@ -17,17 +18,21 @@ public class ChainCode {
 
     }
 
+    public static ChainCode fromBytes(byte[] bytes) {
+        return null;
+    }
+
+
+
     public void serialize(byte[] buffer) {
 
     }
 
     public byte[] serialize() {
-
+        return null;
     }
 
-    public ChainCode() {
 
-    }
 
 
 }

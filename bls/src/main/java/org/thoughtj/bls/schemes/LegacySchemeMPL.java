@@ -1,10 +1,10 @@
 package org.thoughtj.bls.schemes;
 
-import org.thoughtj.bls.*;
 import org.thoughtj.bls.elements.G1ElementVector;
 import org.thoughtj.bls.elements.G2Element;
 import org.thoughtj.bls.elements.G2ElementVector;
 import org.thoughtj.bls.keys.PrivateKey;
+import org.thoughtj.bls.keys.Uint8VectorVector;
 
 public class LegacySchemeMPL extends CoreMPL {
 

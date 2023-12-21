@@ -2,7 +2,7 @@ package org.thoughtj.bls.schemes;
 
 import org.thoughtj.bls.elements.G1ElementVector;
 import org.thoughtj.bls.elements.G2Element;
-import org.thoughtj.bls.Uint8VectorVector;
+import org.thoughtj.bls.keys.Uint8VectorVector;
 
 public class BasicSchemeMPL extends CoreMPL {
 
@@ -19,12 +19,8 @@ public class BasicSchemeMPL extends CoreMPL {
 
 
     // Constructor
-    protected BasicSchemeMPL(long cPtr, boolean cMemoryOwn) {
-        super();
-    }
-    // Constructor
     public BasicSchemeMPL() {
-
+        super();
     }
 
 
@@ -34,9 +30,49 @@ public class BasicSchemeMPL extends CoreMPL {
 
     public boolean aggregateVerify(Uint8VectorVector pubkeys, Uint8VectorVector messages, byte[] signature) {
 
+        //result = AggregateVerify((PK_1, ..., PK_n),
+        //                         (message_1, ..., message_n),
+        //                         signature)
+        //
+        //Inputs:
+        //- PK_1, ..., PK_n, public keys in the format output by SkToPk.
+        //- message_1, ..., message_n, octet strings.
+        //- signature, an octet string output by Aggregate.
+        //
+        //Outputs:
+        //- result, either VALID or INVALID.
+        //
+        //Precondition: n >= 1, otherwise return INVALID.
+        //
+        //Procedure:
+        //1. If any two input messages are equal, return INVALID.
+        //2. return CoreAggregateVerify((PK_1, ..., PK_n),
+        //                              (message_1, ..., message_n),
+        //                              signature)
+
     }
 
     public boolean aggregateVerify(G1ElementVector pubkeys, Uint8VectorVector messages, G2Element signature) {
+
+//        result = AggregateVerify((PK_1, ..., PK_n),
+//        (message_1, ..., message_n),
+//        signature)
+//
+//        Inputs:
+//        - PK_1, ..., PK_n, public keys in the format output by SkToPk.
+//                - message_1, ..., message_n, octet strings.
+//                - signature, an octet string output by Aggregate.
+//
+//                Outputs:
+//        - result, either VALID or INVALID.
+//
+//                Precondition: n >= 1, otherwise return INVALID.
+//
+//                Procedure:
+//        1. If any two input messages are equal, return INVALID.
+//        2. return CoreAggregateVerify((PK_1, ..., PK_n),
+//        (message_1, ..., message_n),
+//        signature)
 
     }
 

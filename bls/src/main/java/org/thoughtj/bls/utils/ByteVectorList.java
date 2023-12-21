@@ -1,6 +1,6 @@
 package org.thoughtj.bls.utils;
 
-import org.thoughtj.bls.Uint8VectorVector;
+import org.thoughtj.bls.keys.Uint8VectorVector;
 
 import java.util.List;
 

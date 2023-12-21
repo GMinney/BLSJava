@@ -1,10 +1,14 @@
 package org.thoughtj.bls.elements;
 
-import org.thoughtj.bls.DASHJBLSJNI;
-
 public class G2ElementVector extends java.util.AbstractList<G2Element> implements java.util.RandomAccess {
 
-    protected G2ElementVector(long cPtr, boolean cMemoryOwn) {
+
+    // Constructions
+    public G2ElementVector(int count, G2Element value) {
+
+    }
+
+    public G2ElementVector(G2ElementVector other) {
 
     }
 
@@ -24,6 +28,9 @@ public class G2ElementVector extends java.util.AbstractList<G2Element> implement
         }
     }
 
+
+
+    // Functions and Methods
     public G2Element get(int index) {
         return doGet(index);
     }
@@ -57,14 +64,6 @@ public class G2ElementVector extends java.util.AbstractList<G2Element> implement
         return doSize();
     }
 
-    public G2ElementVector() {
-        this(DASHJBLSJNI.new_G2ElementVector__SWIG_0(), true);
-    }
-
-    public G2ElementVector(G2ElementVector other) {
-
-    }
-
     public int capacity() {
 
     }
@@ -78,10 +77,6 @@ public class G2ElementVector extends java.util.AbstractList<G2Element> implement
     }
 
     public void clear() {
-
-    }
-
-    public G2ElementVector(int count, G2Element value) {
 
     }
 

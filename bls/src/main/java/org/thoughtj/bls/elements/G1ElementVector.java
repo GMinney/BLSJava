@@ -2,7 +2,14 @@ package org.thoughtj.bls.elements;
 
 public class G1ElementVector extends java.util.AbstractList<G1Element> implements java.util.RandomAccess {
 
-    protected G1ElementVector(long cPtr, boolean cMemoryOwn) {
+    // G1ElementVector is a vector (list) of G1Elements
+
+    // Constructors
+    public G1ElementVector() {
+
+    }
+
+    public G1ElementVector(G1ElementVector other) {
 
     }
 
@@ -22,6 +29,8 @@ public class G1ElementVector extends java.util.AbstractList<G1Element> implement
         }
     }
 
+
+    // Functions and Methods
     public G1Element get(int index) {
         return doGet(index);
     }
@@ -55,13 +64,6 @@ public class G1ElementVector extends java.util.AbstractList<G1Element> implement
         return doSize();
     }
 
-    public G1ElementVector() {
-
-    }
-
-    public G1ElementVector(G1ElementVector other) {
-
-    }
 
     public int capacity() {
 ;
