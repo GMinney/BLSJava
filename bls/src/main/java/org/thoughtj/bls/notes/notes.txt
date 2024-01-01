@@ -171,18 +171,21 @@ hash_to_curve is a uniform encoding from byte strings to points in G
 Should probably make everything snake case for readability
 
 
-
-substr()
-strxor()
-is_square()
-sgn0()
-inv0()
+---- Should place these in a utility class, currently in verify.java
+substr() - need more work
+strxor() - need more work
+is_square() - need more work
+sgn0() - need more work
+inv0() - need more work
 
 pairing()
 frobenius(x)
 
 DONE - through BigDecimal
 ceil()
+
+Hashing function H()
+just a SHA256
 
 
 INFO ABOUT KEYS

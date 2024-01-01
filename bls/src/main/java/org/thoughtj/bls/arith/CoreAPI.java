@@ -5,9 +5,8 @@ import com.google.common.hash.Hashing;
 import java.math.BigInteger;
 import java.security.SecureRandom;
 
-import static org.thoughtj.bls.arith.Curve.calcPubKey;
-import static org.thoughtj.bls.arith.Curve.pointAddition;
 import static org.thoughtj.bls.arith.Conversion.*;
+import static org.thoughtj.bls.arith.Curve.*;
 import static org.thoughtj.bls.arith.Mapping.pairing;
 import static org.thoughtj.bls.arith.Verify.*;
 
@@ -86,6 +85,8 @@ public abstract class CoreAPI {
         Point Q = octetToCurvePointG1(message, true);
         // Calculate the public key with the secret key and the message point
         Point R = Curve.calcPubKey(secret_key, Q);
+
+        byte[] signature = curvePointToOctetG2(R);
         // return the signature as a byte array
         return curvePointToOctetG2(R);
     }
@@ -115,7 +116,7 @@ public abstract class CoreAPI {
         Point Q = octetToCurvePointG1(message, true);
         Point C1 = pairing(Q, xP);
         // P is the generator for either P1 or P2 based on the signature scheme
-        Point C2 = pairing(R, Params.G1_CONST_P); // Use x and y
+        Point C2 = pairing(R, Params.G1_GENERATOR_POINT); // Use x and y
         return C1 == C2;
     }
 
@@ -132,7 +133,7 @@ public abstract class CoreAPI {
         if (aggregate == null) {
             return null;
         }
-        for (byte[] i : signatures){
+        for (int i = 0; i < signatures.length; i++){
             Point next = octetToCurvePointG2(signatures[i], true);
             if (next == null) {
                 return null;
@@ -156,16 +157,16 @@ public abstract class CoreAPI {
         if (!subgroup_check_E2(R)) {
             return false;
         }
-        Point C1 = Params.POINT_AT_INFINITY; //(the identity element in GT)
+        Point C1 = Params.POINT_AT_INFINITY;
         for (int i = 0; i <= public_keys.length; i++) {
             if (!KeyValidate(public_keys[i])) {
                 return false;
             }
             Point xP = octetToCurvePointG1(public_keys[i], true);
             Point Q = octetToCurvePointG1(messages[i], true);
-            Point C1 = C1 * pairing(Q, xP); // point - modular multiplication
+            C1 = montgomeryLadder(BigInteger.ZERO, pairing(Q, xP))  ; // point - modular multiplication
         }
-        Point C2 = pairing(R, P);
+        Point C2 = pairing(R, Params.G1_GENERATOR_POINT);
         return C1 == C2;
     }
 

@@ -55,7 +55,7 @@ public abstract class Curve {
      * @param P a Point
      * @return a new Point on the curve that is effectively 2P
      */
-    private static Point pointDouble(Point P) {
+    public static Point pointDouble(Point P) {
         if (P.equals(POINT_AT_INFINITY)) {
             return POINT_AT_INFINITY;
         }
@@ -74,10 +74,10 @@ public abstract class Curve {
     /**
      * Scalar Multiplication on the BLS12-381 curve using the Montgomery ladder
      * @param k a Private Key
-     * @param P the Generator point of the BLS12-381 curve
+     * @param P a Point
      * @return a new Point that is the Public Key
      */
-    private static Point montgomeryLadder(BigInteger k, Point P) {
+    public static Point montgomeryLadder(BigInteger k, Point P) {
         // TODO: Rename this to Scalar multiplication
         Point R0 = POINT_AT_INFINITY;
         Point R1 = P;
@@ -96,6 +96,7 @@ public abstract class Curve {
         return R0;
     }
 
+
     /**
      * Point Inversion that takes in a Point and uses the BigInteger.negate() on the y param, and returns the resulting point <br>
      * Inversion: Find the additive inverse of a point by negating the y-cord (this is for curves)
@@ -108,6 +109,11 @@ public abstract class Curve {
         BigInteger y = point.y;
         return new Point(point.x, y.negate());
 
+    }
+
+    public static Point pointSubtraction(Point point1, Point point2) {
+
+        return pointAddition(point1, pointInversion(point2));
     }
 
 

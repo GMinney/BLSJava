@@ -2,9 +2,33 @@ package org.thoughtj.bls.arith;
 
 import java.math.BigInteger;
 
+import static org.thoughtj.bls.arith.Field.fieldAddition;
+
 public class Params {
 
     // Params for the BLS12-381 curve defined below
+
+    /**
+     * POINT_AT_INFINITY is a constant that refers to the point at infinity over an elliptic curve E. of the BLS12-381 curve defined by the IETF standards.
+     * @see <a href="https://datatracker.ietf.org/doc/html/draft-irtf-cfrg-pairing-friendly-curves-10#name-for-128-bit-security">IETF</a>
+     */
+    public static final Point POINT_AT_INFINITY = new Point(BigInteger.ZERO, BigInteger.ZERO);
+
+    /**
+     * EMBEDDING_DEGREE is a constant that refers to the embedding degree of the BLS12-381 curve defined by the IETF standards.
+     * @see <a href="https://datatracker.ietf.org/doc/html/draft-irtf-cfrg-pairing-friendly-curves-10#name-for-128-bit-security">IETF</a>
+     */
+    public static final BigInteger EMBEDDING_DEGREE = BigInteger.valueOf(12);
+
+    public static final BigInteger BLS_SECURITY_LEVEL = BigInteger.valueOf(128);
+
+    public static final BigInteger BLS_L_VALUE = BigInteger.valueOf(64);
+
+    public static final BigInteger BLS_CONST_B = BigInteger.valueOf(4);
+
+    //
+    // G1 Params
+    //
 
     /**
      * G1_CONST_P is a constant that refers to the characteristic prime number p of the BLS12-381 curve defined by the IETF standards.
@@ -35,42 +59,10 @@ public class Params {
      * G1_CONST_E is a constant that refers to a primitive element of the multiplicative group (GF(p))^* of the BLS12-381 curve defined by the IETF standards.
      * @see <a href="https://datatracker.ietf.org/doc/html/draft-irtf-cfrg-pairing-friendly-curves-10#name-for-128-bit-security">IETF</a>
      */
-    public static final BigInteger G1_CONST_E = BigInteger.valueOf(4);
 
     public static final BigInteger G1_CONST_A = new BigInteger("144698a3b8e9433d693a02c96d4982b0ea985383ee66a8d8e8981aefd881ac98936f8da0e0f97f5cf428082d584c1d",16);
 
-
-
     public static final BigInteger G1_CONST_B = new BigInteger("12e2908d11688030018b12e8753eee3b2016c1f0f24f4070a0b9c14fcef35ef55a23215a316ceaa5d1cc48e98e172be0",16);
-    /**
-     * EMBEDDING_DEGREE is a constant that refers to the embedding degree of the BLS12-381 curve defined by the IETF standards.
-     * @see <a href="https://datatracker.ietf.org/doc/html/draft-irtf-cfrg-pairing-friendly-curves-10#name-for-128-bit-security">IETF</a>
-     */
-    public static final BigInteger EMBEDDING_DEGREE = BigInteger.valueOf(12);
-
-    public static final BigInteger G2_CONST_R = new BigInteger("1a0111ea397fe69a4b1ba7b6434bacd764774b84f38512bf6730d2a0f6b0f6241eabfffeb153ffffb9feffffffffaaab",16);
-    public static final BigInteger G2_CONST_X0 = new BigInteger("024aa2b2f08f0a91260805272dc51051c6e47ad4fa403b02b4510b647ae3d1770bac0326a805bbefd48056c8c121bdb8",16);
-    public static final BigInteger G2_CONST_X1 = new BigInteger("13e02b6052719f607dacd3a088274f65596bd0d09920b61ab5da61bbdc7f5049334cf11213945d57e5ac7d055d042b7e",16);
-    public static final BigInteger G2_CONST_Y0 = new BigInteger("0ce5d527727d6e118cc9cdc6da2e351aadfd9baa8cbdd3a76d429a695160d12c923ac9cc3baca289e193548608b82801",16);
-    public static final BigInteger G2_CONST_Y1 = new BigInteger("0606c4a02ea734cc32acd2b02bc28b99cb3e287e85a763af267492ab572e99ab3f370d275cec1da1aaa9075ff05f79be",16);
-    public static final BigInteger G2_CONST_H = new BigInteger("5d543a95414e7f1091d50792876a202cd91de4547085abaa68a205b2e5a7ddfa628f1cb4d9e82ef21537e293a6691ae1616ec6e786f0c70cf1c38e31c7238e5",16);
-    public static final String G2_CONST_E = "4 * (u + 1)";
-    public static final BigInteger G2_CONST_H_EFF = new BigInteger("d201000000010001",16);
-
-    // (1, I) is the basis for F, where I^2 + 1 == 0 in F
-
-    public static final BigInteger G2_CONST_A = 240 * I;
-
-
-
-    public static final BigInteger G2_CONST_B = 1012 * (1 + I);
-
-
-    /**
-     * POINT_AT_INFINITY is a constant that refers to the point at infinity over an elliptic curve E. of the BLS12-381 curve defined by the IETF standards.
-     * @see <a href="https://datatracker.ietf.org/doc/html/draft-irtf-cfrg-pairing-friendly-curves-10#name-for-128-bit-security">IETF</a>
-     */
-    public static final Point POINT_AT_INFINITY = new Point(BigInteger.ZERO, BigInteger.ZERO);
 
     /**
      * G1_GENERATOR_POINT is a constant that refers to the characteristic G1 Generator Point of the BLS12-381 curve defined by the IETF standards.
@@ -79,7 +71,25 @@ public class Params {
      * @see <a href="https://datatracker.ietf.org/doc/html/draft-irtf-cfrg-pairing-friendly-curves-10#name-for-128-bit-security">IETF</a>
      */
     public static final Point G1_GENERATOR_POINT = new Point(G1_CONST_X, G1_CONST_Y);
-    
+
+    public static final BigInteger G1_CONST_H_EFF = new BigInteger("d201000000010001",16);
+
+    public static final BigInteger G1_CONST_M = new BigInteger("1",16);
+
+    //
+    // G2 Params
+    //
+
+    public static final BigInteger G2_CONST_M = new BigInteger("2",16);
+
+    public static final BigInteger G2_CONST_XPRIME_0 = new BigInteger("024aa2b2f08f0a91260805272dc51051c6e47ad4fa403b02b4510b647ae3d1770bac0326a805bbefd48056c8c121bdb8",16);
+    public static final BigInteger G2_CONST_XPRIME_1 = new BigInteger("13e02b6052719f607dacd3a088274f65596bd0d09920b61ab5da61bbdc7f5049334cf11213945d57e5ac7d055d042b7e",16);
+    public static final BigInteger G2_CONST_YPRIME_0 = new BigInteger("0ce5d527727d6e118cc9cdc6da2e351aadfd9baa8cbdd3a76d429a695160d12c923ac9cc3baca289e193548608b82801",16);
+    public static final BigInteger G2_CONST_YPRIME_1 = new BigInteger("0606c4a02ea734cc32acd2b02bc28b99cb3e287e85a763af267492ab572e99ab3f370d275cec1da1aaa9075ff05f79be",16);
+    public static final BigInteger G2_CONST_HPRIME = new BigInteger("5d543a95414e7f1091d50792876a202cd91de4547085abaa68a205b2e5a7ddfa628f1cb4d9e82ef21537e293a6691ae1616ec6e786f0c70cf1c38e31c7238e5",16);
+
+    public static final BigInteger G2_CONST_H_EFF = new BigInteger("bc69f08f2ee75b3584c6a0ea91b352888e2a8e9145ad7689986ff031508ffe1329c2f178731db956d82bf015d1212b02ec0ec69d7477c1ae954cbc06689f6a359894c0adebbf6b4e8020005aaa95551",16);
+
     /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
     // Constants for G1 and G2 Isogeny maps
     /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -159,62 +169,73 @@ public class Params {
             }
     };
 
-    public static final BigInteger[][] G2_ISO_K = {
-
-            {
-
-            },
-
-            {
-
-            },
-
-            {
-
-            },
-
-            {
-
-            }
-    }
-
-
     //////// 3-isogeny_map for G2 constants
 
     //// The constants used to compute x_num are as follows:
-    public static final BigInteger G2_K_1_0 = new BigInteger("e0fa1d816ddc03e6b24255e0d7819c171c40f65e273b853324efcd6356caa205ca2f570f13497804415473a1d634b8f",16);
+    public static final BigInteger G2_K_1_0 = fieldAddition(new BigInteger("5c759507e8e333ebb5b7a9a47d7ed8532c52d39fd3a042a88b58423c50ae15d5c2638e343d9c71c6238aaaaaaaa97d6",16),
+            new BigInteger("5c759507e8e333ebb5b7a9a47d7ed8532c52d39fd3a042a88b58423c50ae15d5c2638e343d9c71c6238aaaaaaaa97d6",16), EMBEDDING_DEGREE);
     // k_(1,0) = 0x5c759507e8e333ebb5b7a9a47d7ed8532c52d39fd3a042a88b58423c50ae15d5c2638e343d9c71c6238aaaaaaaa97d6 + 0x5c759507e8e333ebb5b7a9a47d7ed8532c52d39fd3a042a88b58423c50ae15d5c2638e343d9c71c6238aaaaaaaa97d6 * I
-    public static final BigInteger G2_K_1_1 = new BigInteger("e0fa1d816ddc03e6b24255e0d7819c171c40f65e273b853324efcd6356caa205ca2f570f13497804415473a1d634b8f",16);
+    public static final BigInteger G2_K_1_1 = new BigInteger("11560bf17baa99bc32126fced787c88f984f87adf7ae0c7f9a208c6b4f20a4181472aaa9cb8d555526a9ffffffffc71a",16).mod(EMBEDDING_DEGREE);
     // k_(1,1) = 0x11560bf17baa99bc32126fced787c88f984f87adf7ae0c7f9a208c6b4f20a4181472aaa9cb8d555526a9ffffffffc71a * I
-    public static final BigInteger G2_K_1_2 = new BigInteger("e0fa1d816ddc03e6b24255e0d7819c171c40f65e273b853324efcd6356caa205ca2f570f13497804415473a1d634b8f",16);
+    public static final BigInteger G2_K_1_2 = fieldAddition(new BigInteger("11560bf17baa99bc32126fced787c88f984f87adf7ae0c7f9a208c6b4f20a4181472aaa9cb8d555526a9ffffffffc71e",16),
+            new BigInteger("8ab05f8bdd54cde190937e76bc3e447cc27c3d6fbd7063fcd104635a790520c0a395554e5c6aaaa9354ffffffffe38d",16), EMBEDDING_DEGREE);
     // k_(1,2) = 0x11560bf17baa99bc32126fced787c88f984f87adf7ae0c7f9a208c6b4f20a4181472aaa9cb8d555526a9ffffffffc71e + 0x8ab05f8bdd54cde190937e76bc3e447cc27c3d6fbd7063fcd104635a790520c0a395554e5c6aaaa9354ffffffffe38d * I
     public static final BigInteger G2_K_1_3 = new BigInteger("171d6541fa38ccfaed6dea691f5fb614cb14b4e7f4e810aa22d6108f142b85757098e38d0f671c7188e2aaaaaaaa5ed1",16);
 
     //// The constants used to compute x_den are as follows:
 
-    public static final BigInteger G2_K_2_0 = new BigInteger("e0fa1d816ddc03e6b24255e0d7819c171c40f65e273b853324efcd6356caa205ca2f570f13497804415473a1d634b8f",16);
+    public static final BigInteger G2_K_2_0 = new BigInteger("1a0111ea397fe69a4b1ba7b6434bacd764774b84f38512bf6730d2a0f6b0f6241eabfffeb153ffffb9feffffffffaa63",16).mod(EMBEDDING_DEGREE);
     // k_(2,0) = 0x1a0111ea397fe69a4b1ba7b6434bacd764774b84f38512bf6730d2a0f6b0f6241eabfffeb153ffffb9feffffffffaa63 * I
-    public static final BigInteger G2_K_2_1 = new BigInteger("e0fa1d816ddc03e6b24255e0d7819c171c40f65e273b853324efcd6356caa205ca2f570f13497804415473a1d634b8f",16);
+    public static final BigInteger G2_K_2_1 = fieldAddition(new BigInteger("c",16),
+            new BigInteger("1a0111ea397fe69a4b1ba7b6434bacd764774b84f38512bf6730d2a0f6b0f6241eabfffeb153ffffb9feffffffffaa9f",16), EMBEDDING_DEGREE);
     // k_(2,1) = 0xc + 0x1a0111ea397fe69a4b1ba7b6434bacd764774b84f38512bf6730d2a0f6b0f6241eabfffeb153ffffb9feffffffffaa9f * I
 
     //// The constants used to compute y_num are as follows:
 
-    public static final BigInteger G2_K_3_0 = new BigInteger("e0fa1d816ddc03e6b24255e0d7819c171c40f65e273b853324efcd6356caa205ca2f570f13497804415473a1d634b8f",16);
+    public static final BigInteger G2_K_3_0 = fieldAddition(new BigInteger("1530477c7ab4113b59a4c18b076d11930f7da5d4a07f649bf54439d87d27e500fc8c25ebf8c92f6812cfc71c71c6d706",16),
+            new BigInteger("1530477c7ab4113b59a4c18b076d11930f7da5d4a07f649bf54439d87d27e500fc8c25ebf8c92f6812cfc71c71c6d706",16), EMBEDDING_DEGREE);
     // k_(3,0) = 0x1530477c7ab4113b59a4c18b076d11930f7da5d4a07f649bf54439d87d27e500fc8c25ebf8c92f6812cfc71c71c6d706 + 0x1530477c7ab4113b59a4c18b076d11930f7da5d4a07f649bf54439d87d27e500fc8c25ebf8c92f6812cfc71c71c6d706 * I
-    public static final BigInteger G2_K_3_1 = new BigInteger("e0fa1d816ddc03e6b24255e0d7819c171c40f65e273b853324efcd6356caa205ca2f570f13497804415473a1d634b8f",16);
+    public static final BigInteger G2_K_3_1 = new BigInteger("5c759507e8e333ebb5b7a9a47d7ed8532c52d39fd3a042a88b58423c50ae15d5c2638e343d9c71c6238aaaaaaaa97be",16).mod(EMBEDDING_DEGREE);
     // k_(3,1) = 0x5c759507e8e333ebb5b7a9a47d7ed8532c52d39fd3a042a88b58423c50ae15d5c2638e343d9c71c6238aaaaaaaa97be * I
-    public static final BigInteger G2_K_3_2 = new BigInteger("e0fa1d816ddc03e6b24255e0d7819c171c40f65e273b853324efcd6356caa205ca2f570f13497804415473a1d634b8f",16);
+    public static final BigInteger G2_K_3_2 = fieldAddition(new BigInteger("11560bf17baa99bc32126fced787c88f984f87adf7ae0c7f9a208c6b4f20a4181472aaa9cb8d555526a9ffffffffc71c",16),
+            new BigInteger("8ab05f8bdd54cde190937e76bc3e447cc27c3d6fbd7063fcd104635a790520c0a395554e5c6aaaa9354ffffffffe38f",16), EMBEDDING_DEGREE);
     // k_(3,2) = 0x11560bf17baa99bc32126fced787c88f984f87adf7ae0c7f9a208c6b4f20a4181472aaa9cb8d555526a9ffffffffc71c + 0x8ab05f8bdd54cde190937e76bc3e447cc27c3d6fbd7063fcd104635a790520c0a395554e5c6aaaa9354ffffffffe38f * I
     public static final BigInteger G2_K_3_3 = new BigInteger("124c9ad43b6cf79bfbf7043de3811ad0761b0f37a1e26286b0e977c69aa274524e79097a56dc4bd9e1b371c71c718b10",16);
 
     //// The constants used to compute y_den are as follows:
 
-    public static final BigInteger G2_K_4_0 = new BigInteger("e0fa1d816ddc03e6b24255e0d7819c171c40f65e273b853324efcd6356caa205ca2f570f13497804415473a1d634b8f",16);
+    public static final BigInteger G2_K_4_0 = fieldAddition(new BigInteger("1a0111ea397fe69a4b1ba7b6434bacd764774b84f38512bf6730d2a0f6b0f6241eabfffeb153ffffb9feffffffffa8fb",16),
+            new BigInteger("1a0111ea397fe69a4b1ba7b6434bacd764774b84f38512bf6730d2a0f6b0f6241eabfffeb153ffffb9feffffffffa8fb",16), EMBEDDING_DEGREE);
     // k_(4,0) = 0x1a0111ea397fe69a4b1ba7b6434bacd764774b84f38512bf6730d2a0f6b0f6241eabfffeb153ffffb9feffffffffa8fb + 0x1a0111ea397fe69a4b1ba7b6434bacd764774b84f38512bf6730d2a0f6b0f6241eabfffeb153ffffb9feffffffffa8fb * I
-    public static final BigInteger G2_K_4_1 = new BigInteger("e0fa1d816ddc03e6b24255e0d7819c171c40f65e273b853324efcd6356caa205ca2f570f13497804415473a1d634b8f",16);
+    public static final BigInteger G2_K_4_1 = new BigInteger("e0fa1d816ddc03e6b24255e0d7819c171c40f65e273b853324efcd6356caa205ca2f570f13497804415473a1d634b8f",16).mod(EMBEDDING_DEGREE);
     // k_(4,1) = 0x1a0111ea397fe69a4b1ba7b6434bacd764774b84f38512bf6730d2a0f6b0f6241eabfffeb153ffffb9feffffffffa9d3 * I
-    public static final BigInteger G2_K_4_2 = new BigInteger("e0fa1d816ddc03e6b24255e0d7819c171c40f65e273b853324efcd6356caa205ca2f570f13497804415473a1d634b8f",16);
+    public static final BigInteger G2_K_4_2 = fieldAddition(new BigInteger("12",16),
+            new BigInteger("1a0111ea397fe69a4b1ba7b6434bacd764774b84f38512bf6730d2a0f6b0f6241eabfffeb153ffffb9feffffffffaa99",16), EMBEDDING_DEGREE);
     // k_(4,2) = 0x12 + 0x1a0111ea397fe69a4b1ba7b6434bacd764774b84f38512bf6730d2a0f6b0f6241eabfffeb153ffffb9feffffffffaa99 * I
 
+    // The map
+    public static final BigInteger[][] G2_ISO_K = {
 
+            {
+                    G2_K_1_0,
+                    G2_K_1_1,
+                    G2_K_1_2,
+                    G2_K_1_3,
+            },
+            {
+                    G2_K_2_0,
+                    G2_K_2_1
+            },
+            {
+                    G2_K_3_0,
+                    G2_K_3_1,
+                    G2_K_3_2,
+                    G2_K_3_3
+            },
+            {
+                    G2_K_4_0,
+                    G2_K_4_1,
+                    G2_K_4_2
+            }
+    };
 }

@@ -139,7 +139,7 @@ public abstract class Field {
      * @param p
      * @return
      */
-    private static BigInteger fieldSquareRoot (BigInteger a, BigInteger p) {
+    public static BigInteger fieldSquareRoot (BigInteger a, BigInteger p) {
         // Check if 'a' is a quadratic residue (has a square root)
         if (!isQuadraticResidue(a, p)) {
             throw new IllegalArgumentException("No square root exists for " + a + " modulo " + p);
