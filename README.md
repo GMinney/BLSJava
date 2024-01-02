@@ -1,3 +1,9 @@
+<picture>
+   <source media="(prefers-color-scheme: dark)" srcset="/Artboard 1.png">
+   <source media="(prefers-color-scheme: light)" srcset="/Artboard 1.png">
+   <img alt="BLS12-381" src="/Artboard 1.png">
+</picture>
+
 # BLS12-381 Implementation for Java
 
 NOTE: THIS LIBRARY IS NOT YET FORMALLY REVIEWED FOR SECURITY
