@@ -7,7 +7,9 @@
 
 package org.thoughtj.bls;
 
-import org.dashj.bls.Utils.HexUtils;
+import org.thoughtj.bls.elements.*;
+import org.thoughtj.bls.keys.*;
+import org.thoughtj.bls.utils.*;
 import org.junit.Before;
 import org.junit.Test;
 

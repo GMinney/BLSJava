@@ -9,6 +9,11 @@ package org.thoughtj.bls;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 
+
+import org.thoughtj.bls.elements.*;
+import org.thoughtj.bls.keys.*;
+
+
 /**
  * Created by hashengineering on 11/13/18.
  */

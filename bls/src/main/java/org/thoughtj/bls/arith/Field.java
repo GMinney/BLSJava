@@ -15,7 +15,7 @@ public abstract class Field {
      * @param m a coprime value to a
      * @return BigInteger - the multiplicative inverse
      */
-    public static BigInteger fieldInversion(BigInteger a, BigInteger m){
+    public static BigInteger fieldDivision(BigInteger a, BigInteger m){
         // Find coefficients x and y such that ax + my = 1
         //BigInteger[] result = extendedEuclidean(a, m);
         // The modular inverse is the x coefficient (handle negative values)
@@ -48,7 +48,7 @@ public abstract class Field {
     }
 
     /**
-     * Field Subtraction that performs Modular Subtraction
+     * Field Subtraction that performs Modular Subtraction, the additive inverse
      * @param a
      * @param b
      * @param p

@@ -1,8 +1,6 @@
 package org.thoughtj.bls.arith;
-import org.thoughtj.bls.schemes.BasicSchemeMPL;
 
 import static org.thoughtj.bls.arith.Params.*;
-import static org.thoughtj.bls.arith.Field.*;
 
 import java.math.BigInteger;
 public abstract class Curve {
@@ -12,11 +10,18 @@ public abstract class Curve {
      * @param k the private key
      * @return a String at the moment
      */
-    public static String calcPubKey(BigInteger k){
-        Point pubKey = montgomeryLadder(k, G1_GENERATOR_POINT);
+    public static BigInteger calcPubKey(BigInteger k){
+        Point pubKey = scalarMultiplication(k, G1_GENERATOR_POINT);
         String x_value = pubKey.x.toString(16);
         String y_value = pubKey.y.toString(16);
-        return ("04" + x_value + y_value);
+        return new BigInteger("03" + x_value + y_value, 16);
+    }
+
+    public static BigInteger calcSignature(BigInteger k, Point p){
+        Point pubKey = scalarMultiplication(k, p);
+        String x_value = pubKey.x.toString(16);
+        String y_value = pubKey.y.toString(16);
+        return new BigInteger("04" + x_value + y_value, 16);
     }
 
     /**
@@ -37,15 +42,15 @@ public abstract class Curve {
         BigInteger lambda;
         if (P.x.equals(Q.x)) {
             lambda = (BigInteger.valueOf(3).multiply(P.x.pow(2)).add(G1_CONST_B))
-                    .multiply(P.y.multiply(BigInteger.valueOf(2)).modInverse(G1_CONST_P));
+                    .multiply(P.y.multiply(BigInteger.valueOf(2)).modInverse(BLS_CONST_P));
         } else {
             lambda = (Q.y.subtract(P.y))
-                    .multiply(Q.x.subtract(P.x).modInverse(G1_CONST_P));
+                    .multiply(Q.x.subtract(P.x).modInverse(BLS_CONST_P));
         }
 
         // Compute the new point
-        BigInteger xR = lambda.pow(2).subtract(P.x).subtract(Q.x).mod(G1_CONST_P);
-        BigInteger yR = lambda.multiply(P.x.subtract(xR)).subtract(P.y).mod(G1_CONST_P);
+        BigInteger xR = lambda.pow(2).subtract(P.x).subtract(Q.x).mod(BLS_CONST_P);
+        BigInteger yR = lambda.multiply(P.x.subtract(xR)).subtract(P.y).mod(BLS_CONST_P);
 
         return new Point(xR, yR);
     }
@@ -62,11 +67,11 @@ public abstract class Curve {
 
         // Compute the slope
         BigInteger lambda = (BigInteger.valueOf(3).multiply(P.x.pow(2)).add(G1_CONST_B))
-                .multiply(P.y.multiply(BigInteger.valueOf(2)).modInverse(G1_CONST_P));
+                .multiply(P.y.multiply(BigInteger.valueOf(2)).modInverse(BLS_CONST_P));
 
         // Compute the new point
-        BigInteger xR = lambda.pow(2).subtract(P.x.multiply(BigInteger.valueOf(2))).mod(G1_CONST_P);
-        BigInteger yR = lambda.multiply(P.x.subtract(xR)).subtract(P.y).mod(G1_CONST_P);
+        BigInteger xR = lambda.pow(2).subtract(P.x.multiply(BigInteger.valueOf(2))).mod(BLS_CONST_P);
+        BigInteger yR = lambda.multiply(P.x.subtract(xR)).subtract(P.y).mod(BLS_CONST_P);
 
         return new Point(xR, yR);
     }
@@ -77,7 +82,7 @@ public abstract class Curve {
      * @param P a Point
      * @return a new Point that is the Public Key
      */
-    public static Point montgomeryLadder(BigInteger k, Point P) {
+    public static Point scalarMultiplication(BigInteger k, Point P) {
         // TODO: Rename this to Scalar multiplication
         Point R0 = POINT_AT_INFINITY;
         Point R1 = P;
@@ -104,7 +109,7 @@ public abstract class Curve {
      * @param point a Point to invert
      * @return the inverse of the point
      */
-    public static Point pointInversion(Point point) {
+    public static Point pointDivision(Point point) {
 
         BigInteger y = point.y;
         return new Point(point.x, y.negate());
@@ -113,7 +118,7 @@ public abstract class Curve {
 
     public static Point pointSubtraction(Point point1, Point point2) {
 
-        return pointAddition(point1, pointInversion(point2));
+        return pointAddition(point1, pointDivision(point2));
     }
 
 

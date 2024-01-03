@@ -2,15 +2,12 @@ package org.thoughtj.bls.arith;
 
 import org.thoughtj.bls.schemes.BasicSchemeMPL;
 
-import java.math.BigDecimal;
 import java.math.BigInteger;
-import java.math.RoundingMode;
-import java.nio.ByteBuffer;
+import java.util.Arrays;
 
 import static org.thoughtj.bls.arith.Conversion.octetsToInteger;
 import static org.thoughtj.bls.arith.Curve.pointAddition;
 import static org.thoughtj.bls.arith.Mapping.*;
-import static org.thoughtj.bls.arith.Field.*;
 import static org.thoughtj.bls.arith.Params.*;
 import static org.thoughtj.bls.arith.Verify.*;
 
@@ -32,10 +29,9 @@ public abstract class Hashing {
 
         int L = BLS_L_VALUE.intValueExact();
         BigInteger m = G1_CONST_M; // the extension degree of F, m >= 1 for G1 it's "1" and for G2 it's "2"
-        BigInteger p = G1_CONST_P;
 
         // If failure, abort
-        byte[] uniform_bytes = expand_message_xmd(BasicSchemeMPL.getCIPHERSUITE_ID(), msg.toString(), L); // Hashes the message according to the Ciphersuite rules and returns a uniform byte string
+        byte[] uniform_bytes = expand_message_xmd(BasicSchemeMPL.getCIPHERSUITE_ID(), Arrays.toString(msg), L); // Hashes the message according to the Ciphersuite rules and returns a uniform byte string
 
         BigInteger[] element_data = new BigInteger[m.intValueExact()];
         BigInteger[][] field_elements = new BigInteger[num_elements][m.intValueExact()];
@@ -45,7 +41,7 @@ public abstract class Hashing {
             for (int j = 0; j < m.intValueExact(); j++) {
                 int elm_offset = L * (j+i*m.intValueExact());
                 byte[] tv = substr(uniform_bytes, elm_offset, L);
-                element_data[j] = octetsToInteger(tv).mod(p);
+                element_data[j] = octetsToInteger(tv).mod(BLS_CONST_P);
             }
             field_elements[i] = element_data; // for G2
 

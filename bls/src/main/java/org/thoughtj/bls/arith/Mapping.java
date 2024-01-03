@@ -1,10 +1,7 @@
 package org.thoughtj.bls.arith;
 
-import java.math.BigDecimal;
 import java.math.BigInteger;
-import java.math.RoundingMode;
 import java.nio.ByteBuffer;
-import java.util.Arrays;
 
 import static org.thoughtj.bls.HKDF256.hash;
 import static org.thoughtj.bls.arith.Field.*;
@@ -55,8 +52,7 @@ public abstract class Mapping {
         byte[] msg_prime = msg_prime_buffer.array();
 
         // Set first two
-        byte[] b_0 = hash(msg_prime);
-        byte[] hash_storage = b_0;
+        byte[] hash_storage = hash(msg_prime);
 
         // Concat b_1 byte strings into a buffer, then hash
         ByteBuffer b_1_prehash = ByteBuffer.wrap(new byte[hash_storage.length + integerToOctets(1,1).length + DST_prime.length]);
@@ -111,34 +107,6 @@ public abstract class Mapping {
     }
 
     /**
-     * The Shallue and van de Woestijne method of mapping, a universal mapping function<br>
-     * that is the most computationally expensive.<br>
-     * <br>
-     * <strong>**WIP**</strong>
-     */
-    /*
-    private static Point mapToCurveShallue(BigInteger u) {
-        1. tv1 = u^2 * g(Z)
-        2. tv2 = 1 + tv1
-        3. tv1 = 1 - tv1
-        4. tv3 = inv0(tv1 * tv2)
-        5. tv4 = sqrt(-g(Z) * (3 * Z^2 + 4 * A))    # can be precomputed
-        6. If sgn0(tv4) == 1, set tv4 = -tv4        # sgn0(tv4) MUST equal 0
-        7. tv5 = u * tv1 * tv3 * tv4
-        8. tv6 = -4 * g(Z) / (3 * Z^2 + 4 * A)      # can be precomputed
-        9.  x1 = -Z / 2 - tv5
-        10. x2 = -Z / 2 + tv5
-        11. x3 = Z + tv6 * (tv2^2 * tv3)^2
-        12. If is_square(g(x1)), set x = x1 and y = sqrt(g(x1))
-        13. Else If is_square(g(x2)), set x = x2 and y = sqrt(g(x2))
-        14. Else set x = x3 and y = sqrt(g(x3))
-        15. If sgn0(u) != sgn0(y), set y = -y
-        16. return (x, y)
-    }
-    */
-
-
-    /**
      * The Simplified Shallue-van de Woestijne-Ulas method of mapping, a universal mapping function
      * that is computationally expensive.<br>
      * <br>
@@ -157,13 +125,13 @@ public abstract class Mapping {
                     EMBEDDING_DEGREE));
         
         BigInteger x1 = fieldAddition(
-                fieldInversion(
+                fieldDivision(
                         fieldNegation(B, EMBEDDING_DEGREE),
                         fieldMultiplication(A, BigInteger.valueOf(1), EMBEDDING_DEGREE)),
                 tv1, EMBEDDING_DEGREE);
 
         if (tv1.equals(BigInteger.valueOf(0))) {
-            x1 = fieldInversion(B, (fieldMultiplication(Z, A, EMBEDDING_DEGREE)));
+            x1 = fieldDivision(B, (fieldMultiplication(Z, A, EMBEDDING_DEGREE)));
         }
 
         BigInteger gx1 = fieldAddition(
@@ -219,45 +187,6 @@ public abstract class Mapping {
         Point xy_prime = map_to_curve_simple_swu(u);    // (x', y') is on E'    // (x, y) is on E
         return isogeny_map_G2(xy_prime);
     }
-
-    /**
-     * The Elligator 2 mapping function that applies to any montgomery curve with an order of 2.<br>
-     * <br>
-     * <strong>**WIP**</strong>
-     * @param u
-     * @return
-     */
-    /*
-    private static Point map_to_curve_elligator2(BigInteger u) {
-        1.  x1 = -(J / K) * inv0(1 + Z * u^2)
-        2.  If x1 == 0, set x1 = -(J / K)
-        3. gx1 = x1^3 + (J / K) * x1^2 + x1 / K^2
-        4.  x2 = -x1 - (J / K)
-        5. gx2 = x2^3 + (J / K) * x2^2 + x2 / K^2
-        6.  If is_square(gx1), set x = x1, y = sqrt(gx1) with sgn0(y) == 1.
-        7.  Else set x = x2, y = sqrt(gx2) with sgn0(y) == 0.
-        8.   s = x * K
-        9.   t = y * K
-        10. return (s, t)
-    }
-    */
-
-    /**
-     * The Elligator 2 mapping function can be used to map to a twisted edwards curve via the process of<br>
-     * 1. Hash to an equivalent montgomery curve, then transform to a twisted edwards via rational map. <br>
-     * This method of hashing to a twisted Edwards curve thus requires identifying a corresponding Montgomery curve and rational map.<br>
-     * <br>
-     * <strong>**WIP**</strong>
-     * @param u
-     * @return
-     */
-    /*
-    private static Point map_to_curve_elligator2_edwards(BigInteger u) {
-        1. (s, t) = map_to_curve_elligator2(u)      # (s, t) is on M
-        2. (v, w) = rational_map(s, t)              # (v, w) is on E
-        3. return (v, w)
-    }
-    */
 
     /**
      * The cofactor can always be cleared via scalar multiplication by h. For elliptic curves where h = 1, i.e., <br>
@@ -329,7 +258,7 @@ public abstract class Mapping {
         // When points are represented in affine coordinates, one can simply ignore the denominators (xd == 1 and yd == 1).
 
         // Assume p is the characteristic of the base field
-        BigInteger p = G1_CONST_P;
+        BigInteger p = BLS_CONST_P;
 
         // Calculate (p - 1) / 3
         BigInteger exponent = p.subtract(BigInteger.ONE).divide(BigInteger.valueOf(3));
@@ -375,13 +304,13 @@ public abstract class Mapping {
 //      3. return (qxn, xd, qyn, yd)
 
         // Calculate (p - 1) / 3
-        BigInteger exponent = G1_CONST_P.subtract(BigInteger.ONE).divide(BigInteger.valueOf(3));
+        BigInteger exponent = BLS_CONST_P.subtract(BigInteger.ONE).divide(BigInteger.valueOf(3));
 
         // Calculate c1 = 1 / 2^((p - 1) / 3)
-        BigInteger c1 = BigInteger.valueOf(2).modPow(exponent.negate(), G1_CONST_P);
+        BigInteger c1 = BigInteger.valueOf(2).modPow(exponent.negate(), BLS_CONST_P);
 
         // Apply psi to the x-coordinate
-        BigInteger qxn = point.x.multiply(c1).mod(G1_CONST_P);
+        BigInteger qxn = point.x.multiply(c1).mod(BLS_CONST_P);
         // Negate the y-coord
         BigInteger qyn = fieldNegation(point.y, EMBEDDING_DEGREE);
 
@@ -418,13 +347,13 @@ public abstract class Mapping {
 //              9.  t3 = t3 - t1
 //              10.  Q = t3 - P
 //              11. return Q
-        Point t1 = montgomeryLadder(G1_CONST_H_EFF, point);
+        Point t1 = scalarMultiplication(G1_CONST_H_EFF, point);
         Point t2 = psi(point);
         Point t3 = pointDouble(point);
         t3 = psi2(t3);
         t3 = pointSubtraction(t3, t1);
         t2 = pointAddition(t1, t2);
-        t2 = montgomeryLadder(G1_CONST_H_EFF, t2);
+        t2 = scalarMultiplication(G1_CONST_H_EFF, t2);
         t3 = pointAddition(t3, t2);
         t3 = pointSubtraction(t3, t1);
         return pointSubtraction(t3, point);
@@ -445,35 +374,35 @@ public abstract class Mapping {
         BigInteger x_prime = point.x;
         BigInteger y_prime = point.y;
         BigInteger x_num = BigInteger.ZERO;
-        BigInteger x_den = fieldExponentiation(x_prime, BigInteger.valueOf(10), G1_CONST_P);
+        BigInteger x_den = fieldExponentiation(x_prime, BigInteger.valueOf(10), BLS_CONST_P);
         BigInteger y_num = BigInteger.ZERO;;
-        BigInteger y_den = fieldExponentiation(x_prime, BigInteger.valueOf(15), G1_CONST_P);;
+        BigInteger y_den = fieldExponentiation(x_prime, BigInteger.valueOf(15), BLS_CONST_P);;
 
 
         // x_num loop
         for (int i = G1_ISO_K[0].length - 1; i > 1 ; i--) {
-            x_num = x_num.add(fieldMultiplication(G1_ISO_K[0][i], fieldExponentiation(x_prime, BigInteger.valueOf(i), G1_CONST_P), G1_CONST_P));
+            x_num = x_num.add(fieldMultiplication(G1_ISO_K[0][i], fieldExponentiation(x_prime, BigInteger.valueOf(i), BLS_CONST_P), BLS_CONST_P));
         }
         x_num = x_num.add(G1_ISO_K[0][0]);
         // x_den loop
         for (int i = G1_ISO_K[1].length - 1; i > 1 ; i--) {
-            x_den = x_den.add(fieldMultiplication(G1_ISO_K[0][i], fieldExponentiation(x_prime, BigInteger.valueOf(i), G1_CONST_P), G1_CONST_P));
+            x_den = x_den.add(fieldMultiplication(G1_ISO_K[0][i], fieldExponentiation(x_prime, BigInteger.valueOf(i), BLS_CONST_P), BLS_CONST_P));
         }
         x_den = x_den.add(G1_ISO_K[1][0]);
         // y_num loop
         for (int i = G1_ISO_K[2].length - 1; i > 1 ; i--) {
-            y_num = y_num.add(fieldMultiplication(G1_ISO_K[0][i], fieldExponentiation(x_prime, BigInteger.valueOf(i), G1_CONST_P), G1_CONST_P));
+            y_num = y_num.add(fieldMultiplication(G1_ISO_K[0][i], fieldExponentiation(x_prime, BigInteger.valueOf(i), BLS_CONST_P), BLS_CONST_P));
         }
         y_num = y_num.add(G1_ISO_K[2][0]);
         // y_den loop
         for (int i = G1_ISO_K[3].length - 1; i > 1 ; i--) {
-            y_den = y_den.add(fieldMultiplication(G1_ISO_K[0][i], fieldExponentiation(x_prime, BigInteger.valueOf(i), G1_CONST_P), G1_CONST_P));
+            y_den = y_den.add(fieldMultiplication(G1_ISO_K[0][i], fieldExponentiation(x_prime, BigInteger.valueOf(i), BLS_CONST_P), BLS_CONST_P));
         }
         y_den = y_den.add(G1_ISO_K[3][0]);
 
 
-        BigInteger x = fieldInversion(x_num, x_den); // Division currently using field inversion
-        BigInteger y = fieldInversion(fieldMultiplication(y_prime, y_num, EMBEDDING_DEGREE), y_den);
+        BigInteger x = fieldDivision(x_num, x_den); // Division currently using field inversion
+        BigInteger y = fieldDivision(fieldMultiplication(y_prime, y_num, EMBEDDING_DEGREE), y_den);
 
         return new Point(x, y);
     }
@@ -493,35 +422,35 @@ public abstract class Mapping {
         BigInteger x_prime = point.x;
         BigInteger y_prime = point.y;
         BigInteger x_num = BigInteger.ZERO;
-        BigInteger x_den = fieldExponentiation(x_prime, BigInteger.valueOf(2), G1_CONST_P);
+        BigInteger x_den = fieldExponentiation(x_prime, BigInteger.valueOf(2), BLS_CONST_P);
         BigInteger y_num = BigInteger.ZERO;;
-        BigInteger y_den = fieldExponentiation(x_prime, BigInteger.valueOf(3), G1_CONST_P);;
+        BigInteger y_den = fieldExponentiation(x_prime, BigInteger.valueOf(3), BLS_CONST_P);;
 
 
         // x_num loop
         for (int i = G2_ISO_K[0].length - 1; i > 1 ; i--) {
-            x_num = x_num.add(fieldMultiplication(G2_ISO_K[0][i], fieldExponentiation(x_prime, BigInteger.valueOf(i), G1_CONST_P), G1_CONST_P));
+            x_num = x_num.add(fieldMultiplication(G2_ISO_K[0][i], fieldExponentiation(x_prime, BigInteger.valueOf(i), BLS_CONST_P), BLS_CONST_P));
         }
         x_num = x_num.add(G2_ISO_K[0][0]);
         // x_den loop
         for (int i = G2_ISO_K[1].length - 1; i > 1 ; i--) {
-            x_den = x_den.add(fieldMultiplication(G2_ISO_K[0][i], fieldExponentiation(x_prime, BigInteger.valueOf(i), G1_CONST_P), G1_CONST_P));
+            x_den = x_den.add(fieldMultiplication(G2_ISO_K[0][i], fieldExponentiation(x_prime, BigInteger.valueOf(i), BLS_CONST_P), BLS_CONST_P));
         }
         x_den = x_den.add(G2_ISO_K[1][0]);
         // y_num loop
         for (int i = G2_ISO_K[2].length - 1; i > 1 ; i--) {
-            y_num = y_num.add(fieldMultiplication(G2_ISO_K[0][i], fieldExponentiation(x_prime, BigInteger.valueOf(i), G1_CONST_P), G1_CONST_P));
+            y_num = y_num.add(fieldMultiplication(G2_ISO_K[0][i], fieldExponentiation(x_prime, BigInteger.valueOf(i), BLS_CONST_P), BLS_CONST_P));
         }
         y_num = y_num.add(G2_ISO_K[2][0]);
         // y_den loop
         for (int i = G2_ISO_K[3].length - 1; i > 1 ; i--) {
-            y_den = y_den.add(fieldMultiplication(G2_ISO_K[0][i], fieldExponentiation(x_prime, BigInteger.valueOf(i), G1_CONST_P), G1_CONST_P));
+            y_den = y_den.add(fieldMultiplication(G2_ISO_K[0][i], fieldExponentiation(x_prime, BigInteger.valueOf(i), BLS_CONST_P), BLS_CONST_P));
         }
         y_den = y_den.add(G2_ISO_K[3][0]);
 
 
-        BigInteger x = fieldInversion(x_num, x_den); // Division currently using field inversion
-        BigInteger y = fieldInversion(fieldMultiplication(y_prime, y_num, EMBEDDING_DEGREE), y_den);
+        BigInteger x = fieldDivision(x_num, x_den); // Division currently using field inversion
+        BigInteger y = fieldDivision(fieldMultiplication(y_prime, y_num, EMBEDDING_DEGREE), y_den);
 
         return new Point(x, y);
 
@@ -540,28 +469,28 @@ public abstract class Mapping {
         Point Q = point_on_G2;
         //int[] c = {-1, 0, 1}; // an integer c, c_0, ...,c_L in {-1,0,1} such that the sum of c_i * 2^i (i = 0, 1, ..., L) equals c
         BigInteger k = EMBEDDING_DEGREE;
-        BigInteger t = G1_CONST_P;
-        BigInteger p = G1_CONST_P;
+        BigInteger t = BLS_CONST_P;
+        BigInteger p = BLS_CONST_P;
         byte[] c = t.toByteArray();
 
         Point f = G1_GENERATOR_POINT;
         Point T = Q;
         if (c[BLS_L_VALUE.intValue()] == -1) {
-            T = pointInversion(T);
+            T = pointDivision(T);
         }
         for (int i = BLS_L_VALUE.intValue()-1 ; i>0 ; i--){
-            f = montgomeryLadder(line_function(T, T, P), pointDouble(f));
+            f = scalarMultiplication(line_function(T, T, P), pointDouble(f));
             T = pointAddition(T, T);
             if (c[i] == 1) {
-                f = montgomeryLadder(line_function(T, Q, P), f);
+                f = scalarMultiplication(line_function(T, Q, P), f);
                 T = pointAddition(T, Q);
             } else if (c[i] == -1) {
-                f = montgomeryLadder(line_function(T, pointInversion(Q), P), f);
+                f = scalarMultiplication(line_function(T, pointDivision(Q), P), f);
                 T = pointSubtraction(T, Q);
             }
         }
         //f = f^{(p^k - 1) / r};
-        f = montgomeryLadder(fieldInversion(fieldSubtraction(fieldExponentiation(p, k, EMBEDDING_DEGREE), BigInteger.valueOf(1), EMBEDDING_DEGREE), G1_CONST_M), f);
+        f = scalarMultiplication(fieldDivision(fieldSubtraction(fieldExponentiation(p, k, EMBEDDING_DEGREE), BigInteger.valueOf(1), EMBEDDING_DEGREE), G1_CONST_M), f);
         return f;
 
     }
@@ -578,7 +507,7 @@ public abstract class Mapping {
         //        return (l * (x - x_1) + y_1 - y);
         BigInteger l;
         if (q1 == q2) {
-            l = (fieldInversion
+            l = (fieldDivision
                     (fieldMultiplication
                             (BigInteger.valueOf(3),
                             fieldExponentiation(
@@ -591,11 +520,11 @@ public abstract class Mapping {
                             q1.y,
                             EMBEDDING_DEGREE))));
 
-        } else if (q1 == pointInversion(q2)) {
+        } else if (q1 == pointDivision(q2)) {
             return fieldSubtraction(p.x, q1.x, EMBEDDING_DEGREE);
         }
         else {
-            l = fieldInversion(fieldSubtraction(q2.y, q1.y, EMBEDDING_DEGREE), fieldSubtraction(q2.x, q1.x, EMBEDDING_DEGREE));
+            l = fieldDivision(fieldSubtraction(q2.y, q1.y, EMBEDDING_DEGREE), fieldSubtraction(q2.x, q1.x, EMBEDDING_DEGREE));
 
         }
         BigInteger out = fieldAddition(
@@ -607,6 +536,72 @@ public abstract class Mapping {
                 EMBEDDING_DEGREE);
         return out;
     }
+
+    /**
+     * The Shallue and van de Woestijne method of mapping, a universal mapping function<br>
+     * that is the most computationally expensive.<br>
+     * <br>
+     * <strong>**WIP**</strong>
+     */
+    /*
+    private static Point mapToCurveShallue(BigInteger u) {
+        1. tv1 = u^2 * g(Z)
+        2. tv2 = 1 + tv1
+        3. tv1 = 1 - tv1
+        4. tv3 = inv0(tv1 * tv2)
+        5. tv4 = sqrt(-g(Z) * (3 * Z^2 + 4 * A))    # can be precomputed
+        6. If sgn0(tv4) == 1, set tv4 = -tv4        # sgn0(tv4) MUST equal 0
+        7. tv5 = u * tv1 * tv3 * tv4
+        8. tv6 = -4 * g(Z) / (3 * Z^2 + 4 * A)      # can be precomputed
+        9.  x1 = -Z / 2 - tv5
+        10. x2 = -Z / 2 + tv5
+        11. x3 = Z + tv6 * (tv2^2 * tv3)^2
+        12. If is_square(g(x1)), set x = x1 and y = sqrt(g(x1))
+        13. Else If is_square(g(x2)), set x = x2 and y = sqrt(g(x2))
+        14. Else set x = x3 and y = sqrt(g(x3))
+        15. If sgn0(u) != sgn0(y), set y = -y
+        16. return (x, y)
+    }
+    */
+
+    /**
+     * The Elligator 2 mapping function that applies to any montgomery curve with an order of 2.<br>
+     * <br>
+     * <strong>**WIP**</strong>
+     * @param u
+     * @return
+     */
+    /*
+    private static Point map_to_curve_elligator2(BigInteger u) {
+        1.  x1 = -(J / K) * inv0(1 + Z * u^2)
+        2.  If x1 == 0, set x1 = -(J / K)
+        3. gx1 = x1^3 + (J / K) * x1^2 + x1 / K^2
+        4.  x2 = -x1 - (J / K)
+        5. gx2 = x2^3 + (J / K) * x2^2 + x2 / K^2
+        6.  If is_square(gx1), set x = x1, y = sqrt(gx1) with sgn0(y) == 1.
+        7.  Else set x = x2, y = sqrt(gx2) with sgn0(y) == 0.
+        8.   s = x * K
+        9.   t = y * K
+        10. return (s, t)
+    }
+    */
+
+    /**
+     * The Elligator 2 mapping function can be used to map to a twisted edwards curve via the process of<br>
+     * 1. Hash to an equivalent montgomery curve, then transform to a twisted edwards via rational map. <br>
+     * This method of hashing to a twisted Edwards curve thus requires identifying a corresponding Montgomery curve and rational map.<br>
+     * <br>
+     * <strong>**WIP**</strong>
+     * @param u
+     * @return
+     */
+    /*
+    private static Point map_to_curve_elligator2_edwards(BigInteger u) {
+        1. (s, t) = map_to_curve_elligator2(u)      # (s, t) is on M
+        2. (v, w) = rational_map(s, t)              # (v, w) is on E
+        3. return (v, w)
+    }
+    */
 
 
 

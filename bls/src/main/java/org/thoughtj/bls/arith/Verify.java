@@ -1,16 +1,11 @@
 package org.thoughtj.bls.arith;
 
-import java.lang.reflect.Array;
-import java.math.BigDecimal;
 import java.math.BigInteger;
-import java.math.RoundingMode;
 import java.util.Arrays;
 
 import static org.thoughtj.bls.arith.Curve.*;
-import static org.thoughtj.bls.arith.Field.*;
 import static org.thoughtj.bls.arith.Mapping.frobenius;
 import static org.thoughtj.bls.arith.Params.*;
-import static org.thoughtj.bls.arith.Mapping.*;
 
 public abstract class Verify {
 
@@ -27,7 +22,7 @@ public abstract class Verify {
         Point temp = pointDouble(frobenius(point)); // first order frobenius multiplied by 2 on P
         Point temp2 = frobenius(temp); // second order frobenius on P
         Point temp3 = pointSubtraction(pointSubtraction(pointSubtraction(temp, point), temp2), temp2);
-        Point result = montgomeryLadder(G1_CONST_P, temp3); //   "(z^2-1)/3"       scalar multiplied by      (2 endomorphism(P) - (P) - endomorphism^2(P)) - (endomorphism^2(P))
+        Point result = scalarMultiplication(BLS_CONST_P, temp3); //   "(z^2-1)/3"       scalar multiplied by      (2 endomorphism(P) - (P) - endomorphism^2(P)) - (endomorphism^2(P))
         return result == POINT_AT_INFINITY;
     }
 
@@ -44,7 +39,7 @@ public abstract class Verify {
         Point temp = frobenius(frobenius(point)); // second order frobenius on P
         Point temp2 = frobenius(temp); // third order frobenius on P
         Point temp3 = pointAddition(pointSubtraction(temp2, temp), point);
-        Point result = montgomeryLadder(G1_CONST_P, temp3); // "z" scalar multiplied by (endomorphism^3(P)) - (endomorphism^2(P)) + (P)
+        Point result = scalarMultiplication(BLS_CONST_P, temp3); // "z" scalar multiplied by (endomorphism^3(P)) - (endomorphism^2(P)) + (P)
         return result == POINT_AT_INFINITY;
 
     }

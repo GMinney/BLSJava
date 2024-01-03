@@ -23,18 +23,32 @@ public class Params {
     public static final BigInteger BLS_SECURITY_LEVEL = BigInteger.valueOf(128);
 
     public static final BigInteger BLS_L_VALUE = BigInteger.valueOf(64);
+    public static final BigInteger BLS_M_VALUE = BigInteger.valueOf(384);
 
     public static final BigInteger BLS_CONST_B = BigInteger.valueOf(4);
+
+    /**
+     * BLS_CONST_P is a constant that refers to the characteristic prime number p of the BLS12-381 curve defined by the IETF standards.
+     * @see <a href="https://datatracker.ietf.org/doc/html/draft-irtf-cfrg-pairing-friendly-curves-10#name-for-128-bit-security">IETF</a>
+     */
+    public static final BigInteger BLS_CONST_P = new BigInteger("1a0111ea397fe69a4b1ba7b6434bacd764774b84f38512bf6730d2a0f6b0f6241eabfffeb153ffffb9feffffffffaaab",16);
+
+    /**
+     * SIGNATURE_LENGTH is a constant that refers to the min-sig-size in bytes of the BLS12-381 curve defined by the IETF standards.
+     * @see <a href="https://datatracker.ietf.org/doc/html/draft-irtf-cfrg-pairing-friendly-curves-10#name-for-128-bit-security">IETF</a>
+     */
+    public static final int SIGNATURE_LENGTH = 96;
+    /**
+     * PUBKEY_LENGTH is a constant that refers to the min-pubkey-size in bytes of the BLS12-381 curve defined by the IETF standards.
+     * @see <a href="https://datatracker.ietf.org/doc/html/draft-irtf-cfrg-pairing-friendly-curves-10#name-for-128-bit-security">IETF</a>
+     */
+    public static final int PUBKEY_LENGTH = 48;
 
     //
     // G1 Params
     //
 
-    /**
-     * G1_CONST_P is a constant that refers to the characteristic prime number p of the BLS12-381 curve defined by the IETF standards.
-     * @see <a href="https://datatracker.ietf.org/doc/html/draft-irtf-cfrg-pairing-friendly-curves-10#name-for-128-bit-security">IETF</a>
-     */
-    public static final BigInteger G1_CONST_P = new BigInteger("1a0111ea397fe69a4b1ba7b6434bacd764774b84f38512bf6730d2a0f6b0f6241eabfffeb153ffffb9feffffffffaaab",16);
+
     /**
      * G1_CONST_R is a constant that refers to the the order of G_1 and G_2 of the BLS12-381 curve defined by the IETF standards.
      * @see <a href="https://datatracker.ietf.org/doc/html/draft-irtf-cfrg-pairing-friendly-curves-10#name-for-128-bit-security">IETF</a>

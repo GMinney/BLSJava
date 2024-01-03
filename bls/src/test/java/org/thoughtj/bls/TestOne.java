@@ -9,6 +9,11 @@ package org.thoughtj.bls;
 
 import org.junit.Test;
 
+import org.thoughtj.bls.schemes.*;
+import org.thoughtj.bls.elements.*;
+import org.thoughtj.bls.keys.*;
+import org.thoughtj.bls.utils.*;
+
 import static org.junit.Assert.assertTrue;
 
 public class TestOne extends BaseTest {

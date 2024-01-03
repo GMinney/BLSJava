@@ -46,7 +46,7 @@ public abstract class CoreAPI {
      */
     public static byte[] SkToPk(byte[] secret_key){
         BigInteger element = octetToFieldElement(secret_key);
-        return calcPubKey(element).getBytes();
+        return calcPubKey(element).toByteArray();
     }
 
     /**
@@ -84,11 +84,14 @@ public abstract class CoreAPI {
         // Convert the message into a point
         Point Q = octetToCurvePointG1(message, true);
         // Calculate the public key with the secret key and the message point
-        Point R = Curve.calcPubKey(secret_key, Q);
+        BigInteger pub_key = calcPubKey(secret_key);
 
-        byte[] signature = curvePointToOctetG2(R);
+        Point signature = octetToCurvePointG2(pub_key.toByteArray(), true);
+        if (signature == null){
+            return null;
+        }
         // return the signature as a byte array
-        return curvePointToOctetG2(R);
+        return curvePointToOctetG2(signature);
     }
 
     /**
@@ -164,7 +167,7 @@ public abstract class CoreAPI {
             }
             Point xP = octetToCurvePointG1(public_keys[i], true);
             Point Q = octetToCurvePointG1(messages[i], true);
-            C1 = montgomeryLadder(BigInteger.ZERO, pairing(Q, xP))  ; // point - modular multiplication
+            C1 = scalarMultiplication(BigInteger.ZERO, pairing(Q, xP))  ; // point - modular multiplication
         }
         Point C2 = pairing(R, Params.G1_GENERATOR_POINT);
         return C1 == C2;

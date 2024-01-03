@@ -7,10 +7,10 @@
 
 package org.thoughtj.bls;
 
-import org.dashj.bls.Utils.ByteVector;
-import org.dashj.bls.Utils.ByteVectorList;
-import org.dashj.bls.Utils.G1ElementList;
-import org.dashj.bls.Utils.G2ElementList;
+import org.thoughtj.bls.schemes.*;
+import org.thoughtj.bls.elements.*;
+import org.thoughtj.bls.keys.*;
+import org.thoughtj.bls.utils.*;
 import org.junit.Test;
 
 import java.util.Arrays;

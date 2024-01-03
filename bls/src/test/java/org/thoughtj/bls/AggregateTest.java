@@ -8,6 +8,10 @@
 package org.thoughtj.bls;
 
 import org.dashj.bls.Utils.ByteVectorList;
+import org.thoughtj.bls.schemes.*;
+import org.thoughtj.bls.elements.*;
+import org.thoughtj.bls.keys.*;
+import org.thoughtj.bls.utils.*;
 import org.junit.Test;
 
 import java.util.Arrays;

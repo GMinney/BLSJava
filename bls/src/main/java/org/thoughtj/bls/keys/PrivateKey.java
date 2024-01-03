@@ -24,6 +24,8 @@ public class PrivateKey {
 
     // Public members
     public final static int PRIVATE_KEY_SIZE = 32;
+    private static Logger log = LoggerFactory.getLogger(PrivateKey.class);
+
 
 
     // Methods
@@ -94,7 +96,7 @@ public class PrivateKey {
     // getG1Element returns a Public Key of 48bytes corresponding the Private Key of 32bytes
     public G1Element getG1Element() {
 
-        String pubKey = Curve.calcPubKey(this.keydata);
+        BigInteger pubKey = Curve.calcPubKey(this.keydata);
 
 
 

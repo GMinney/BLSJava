@@ -7,6 +7,9 @@
 
 package org.thoughtj.bls;
 
+import org.thoughtj.bls.schemes.*;
+import org.thoughtj.bls.elements.*;
+import org.thoughtj.bls.keys.*;
 import org.junit.Test;
 
 import java.util.Arrays;

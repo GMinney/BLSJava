@@ -7,14 +7,14 @@
 
 package org.thoughtj.bls;
 
-import org.dashj.bls.Utils.ByteVector;
-import org.dashj.bls.Utils.ByteVectorList;
+import org.thoughtj.bls.schemes.*;
+import org.thoughtj.bls.elements.*;
+import org.thoughtj.bls.keys.*;
+import org.thoughtj.bls.utils.*;
 import org.junit.Test;
 
 import java.util.ArrayList;
 
-import static org.dashj.bls.DASHJBLS.*;
-import static org.dashj.bls.Entropy.getRandomSeed;
 import static org.junit.Assert.assertTrue;
 
 public class ThresholdTest extends BaseTest {
