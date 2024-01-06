@@ -13,22 +13,16 @@ import java.nio.ByteBuffer;
 
 public class PrivateKey {
 
-    // Private members
-
-    // Get the logger attached to the BLS class
-    // private static final Logger log = LoggerFactory.getLogger(BLS.class);
+    // Members
 
     // When this class is instantiated, allocate a 32byte byte array with 0's
     private BigInteger keydata = new BigInteger(ByteBuffer.allocate(PRIVATE_KEY_SIZE).array());
-
-
-    // Public members
     public final static int PRIVATE_KEY_SIZE = 32;
     private static Logger log = LoggerFactory.getLogger(PrivateKey.class);
 
 
+    // Public Functions and Methods
 
-    // Methods
     public static PrivateKey fromSeedBIP32(byte[] seed) {
         // Generate a random private key from a provided seed
         return null;

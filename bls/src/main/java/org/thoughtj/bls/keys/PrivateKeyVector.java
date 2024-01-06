@@ -5,6 +5,16 @@ import java.util.Arrays;
 
 public class PrivateKeyVector extends java.util.AbstractList<PrivateKey> implements java.util.RandomAccess {
 
+    // Constructors
+
+    public PrivateKeyVector() {
+
+    }
+
+    public PrivateKeyVector(PrivateKeyVector other) {
+
+    }
+
     public PrivateKeyVector(PrivateKey[] initialElements) {
         this();
         reserve(initialElements.length);
@@ -18,6 +28,40 @@ public class PrivateKeyVector extends java.util.AbstractList<PrivateKey> impleme
             add(element);
         }
     }
+
+
+    // Private Functions and Methods
+
+    private int doSize() {
+
+    }
+
+    private void doAdd(PrivateKey x) {
+
+    }
+
+    private void doAdd(int index, PrivateKey x) {
+
+    }
+
+    private PrivateKey doRemove(int index) {
+
+    }
+
+    private PrivateKey doGet(int index) {
+
+    }
+
+    private PrivateKey doSet(int index, PrivateKey val) {
+
+    }
+
+    private void doRemoveRange(int fromIndex, int toIndex) {
+
+    }
+
+
+    // Public Functions and Methods
 
     public PrivateKey get(int index) {
         return doGet(index);
@@ -52,14 +96,6 @@ public class PrivateKeyVector extends java.util.AbstractList<PrivateKey> impleme
         return doSize();
     }
 
-    public PrivateKeyVector() {
-
-    }
-
-    public PrivateKeyVector(PrivateKeyVector other) {
-
-    }
-
     public int capacity() {
 
     }
@@ -80,32 +116,6 @@ public class PrivateKeyVector extends java.util.AbstractList<PrivateKey> impleme
 
     }
 
-    private int doSize() {
 
-    }
-
-    private void doAdd(PrivateKey x) {
-
-    }
-
-    private void doAdd(int index, PrivateKey x) {
-
-    }
-
-    private PrivateKey doRemove(int index) {
-
-    }
-
-    private PrivateKey doGet(int index) {
-
-    }
-
-    private PrivateKey doSet(int index, PrivateKey val) {
-
-    }
-
-    private void doRemoveRange(int fromIndex, int toIndex) {
-
-    }
 
 }

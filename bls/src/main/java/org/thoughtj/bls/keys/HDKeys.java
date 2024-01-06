@@ -1,18 +1,25 @@
 package org.thoughtj.bls.keys;
 
-import org.thoughtj.bls.DASHJBLSJNI;
 import org.thoughtj.bls.elements.G1Element;
 import org.thoughtj.bls.elements.G2Element;
 
 public class HDKeys {
 
-    public final static short HASH_LEN = DASHJBLSJNI.HDKeys_HASH_LEN_get();
+    // Members
 
-    protected HDKeys(long cPtr, boolean cMemoryOwn) {
+    // Length of the hash
+    public final static short HASH_LEN = 32;
+
+
+
+    // Constructors
+
+    public HDKeys() {
 
     }
 
 
+    // Public Methods and Functions
 
     public static PrivateKey keyGen(byte[] seed) {
 
@@ -39,10 +46,6 @@ public class HDKeys {
     }
 
     public static G2Element deriveChildG2Unhardened(G2Element pk, long index) {
-
-    }
-
-    public HDKeys() {
 
     }
 

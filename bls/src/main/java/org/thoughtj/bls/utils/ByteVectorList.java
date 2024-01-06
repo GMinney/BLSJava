@@ -1,7 +1,5 @@
 package org.thoughtj.bls.utils;
 
-import org.thoughtj.bls.keys.Uint8VectorVector;
-
 import java.util.List;
 
 public class ByteVectorList extends Uint8VectorVector {

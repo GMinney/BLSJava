@@ -1,4 +1,4 @@
-package org.thoughtj.bls.utils;
+package org.thoughtj.bls.keys;
 
 import org.thoughtj.bls.keys.PrivateKey;
 import org.thoughtj.bls.keys.PrivateKeyVector;

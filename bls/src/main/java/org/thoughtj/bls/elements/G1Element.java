@@ -3,6 +3,7 @@ package org.thoughtj.bls.elements;
 import org.slf4j.ILoggerFactory;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.thoughtj.bls.HKDF256;
 import org.thoughtj.bls.arith.*;
 import org.thoughtj.bls.keys.PrivateKey;
 
@@ -18,68 +19,65 @@ public class G1Element {
     private static Logger log = LoggerFactory.getLogger(PrivateKey.class);
     private BigInteger g1_element;
 
-
-    public G1Element() {
+    // Force use of static constructors
+    private G1Element() {
         this.g1_element = new BigInteger(ByteBuffer.allocate(SIZE).array());
     }
 
-    public G1Element(G1Element other) {
-        this.g1_element = other.g1_element;
+    private G1Element(G1Element element) {
+        this.g1_element = element.g1_element;
+    }
+    private G1Element(byte[] element) {
+        this.g1_element = new BigInteger(element);
     }
 
-    public G1Element fromBytes(byte[] bytes, boolean fLegacy) throws RuntimeException {
+    public static G1Element fromBytes(byte[] bytes, boolean fLegacy) throws RuntimeException {
         // check the the bytes
         if (bytes.length != SIZE) {
             log.error("input bytes wrong size");
             throw new RuntimeException("G1Element failed check");
         }
-        // set the g1_element and return this object
-        this.g1_element = new BigInteger(bytes);
-        // if fLegacy, do something
-        return this;
+        // TODO: fLegacy
+        return new G1Element(bytes);
     }
 
-    public G1Element fromBytes(byte[] bytes) throws RuntimeException {
+    public static G1Element fromBytes(byte[] bytes) throws RuntimeException {
         // check the the bytes
         if (bytes.length != SIZE) {
             log.error("input bytes wrong size");
             throw new RuntimeException("G1Element failed check");
         }
-        // set the g1_element and return this object
-        this.g1_element = new BigInteger(bytes);
-        return this;
+        return new G1Element(bytes);
     }
 
-    public G1Element fromBytesUnchecked(byte[] bytes, boolean fLegacy) {
-        // set the g1_element and return this object
-        this.g1_element = new BigInteger(bytes);
-        // if fLegacy, do something
-        return this;
+    public static G1Element fromBytesUnchecked(byte[] bytes, boolean fLegacy) {
+        // TODO: fLegacy
+        return new G1Element(bytes);
     }
 
-    public G1Element fromBytesUnchecked(byte[] bytes) {
-        // set the g1_element and return this object
-        this.g1_element = new BigInteger(bytes);
-        return this;
+    public static G1Element fromBytesUnchecked(byte[] bytes) {
+        // return G1Element object
+        return new G1Element(bytes);
     }
 
-    public G1Element fromMessage(byte[] message, byte[] dst, int dst_len) {
-        // set the g1_element and return this object
-        this.g1_element = new BigInteger(message);
-        // if fLegacy, do something
-        return this;
+    public static G1Element fromMessage(byte[] message, byte[] dst, int dst_len) {
+        // TODO: fLegacy
+        return new G1Element(message);
     }
 
-    public G1Element generator() {
-        return null;
+    public static G1Element generator() {
+        // Get the generator element of the BLS12-381 Curve
+        return new G1Element(Params.BLS_CONST_P.toByteArray());
     }
 
     public boolean isValid() {
-        return false;
+        return CoreAPI.KeyValidate(this.serialize());
     }
 
     public void checkValid() {
-
+        if (!isValid()){
+            throw new RuntimeException("Not valid");
+        }
     }
 
     public G1Element negate() {
@@ -92,16 +90,23 @@ public class G1Element {
     }
 
     public long getFingerprint(boolean fLegacy) {
-
+        // SHA256 the G1Element and return the first four bytes as long
+        // TODO: fLegacy
+        byte[] hash = HKDF256.hash(this.g1_element.toByteArray());
+        return ByteBuffer.wrap(hash).getLong();
     }
 
     public long getFingerprint() {
+        // SHA256 the G1Element and return the first four bytes as long
+        byte[] hash = HKDF256.hash(this.g1_element.toByteArray());
+        return ByteBuffer.wrap(hash).getLong();
 
     }
 
     public byte[] serialize(boolean fLegacy) {
         Point curve_point = Conversion.octetToCurvePointG1(this.g1_element.toByteArray(), true);
         return Conversion.curvePointToOctetG1(curve_point);
+        // TODO: fLegacy
     }
 
     public byte[] serialize() {

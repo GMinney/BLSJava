@@ -2,7 +2,7 @@ package org.thoughtj.bls.schemes;
 
 import org.thoughtj.bls.elements.G1ElementVector;
 import org.thoughtj.bls.elements.G2Element;
-import org.thoughtj.bls.keys.Uint8VectorVector;
+import org.thoughtj.bls.utils.Uint8VectorVector;
 
 public class BasicSchemeMPL extends CoreMPL {
 

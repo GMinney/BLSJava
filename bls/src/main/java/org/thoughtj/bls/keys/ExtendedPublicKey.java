@@ -1,17 +1,18 @@
 package org.thoughtj.bls.keys;
 
 import org.thoughtj.bls.ChainCode;
-import org.thoughtj.bls.DASHJBLSJNI;
 import org.thoughtj.bls.elements.G1Element;
 
 public class ExtendedPublicKey {
 
-    public final static long VERSION = DASHJBLSJNI.ExtendedPublicKey_VERSION_get();
-    public final static long SIZE = DASHJBLSJNI.ExtendedPublicKey_SIZE_get();
+    // Members
 
-    protected ExtendedPublicKey(long cPtr, boolean cMemoryOwn) {
+    // Version number and Size bytes pulled from bls-signatures
+    public final static long VERSION = 1;
+    public final static long SIZE = 93;
 
-    }
+
+    // Constructors
 
     public static ExtendedPublicKey fromBytes(byte[] bytes, boolean fLegacy) {
 
@@ -29,8 +30,11 @@ public class ExtendedPublicKey {
 
     }
 
-    public long getVersion() {
 
+    // Public Functions and Methods
+
+    public long getVersion() {
+        return ExtendedPublicKey.VERSION;
     }
 
     public short getDepth() {

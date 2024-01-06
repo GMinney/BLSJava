@@ -8,7 +8,7 @@
 package org.thoughtj.bls;
 
 import org.thoughtj.bls.utils.*;
-import org.thoughtj.bls.keys.Uint8Vector;
+import org.thoughtj.bls.utils.Uint8Vector;
 
 import java.security.SecureRandom;
 

@@ -1,5 +1,13 @@
 package org.thoughtj.bls.elements;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.thoughtj.bls.arith.Conversion;
+import org.thoughtj.bls.arith.Point;
+import org.thoughtj.bls.keys.PrivateKey;
+
+import java.math.BigInteger;
+
 public class GTElement {
 
     // A GTElement is a public key that is 48 bytes in size or 384 bits
@@ -11,24 +19,40 @@ public class GTElement {
 
     public final static int SIZE = 48;
 
+    private static Logger log = LoggerFactory.getLogger(GTElement.class);
+    private BigInteger gt_element;
+
+    private GTElement(byte[] element) {
+        this.gt_element = new BigInteger(element);
+    }
+
     public static GTElement fromBytes(byte[] bytes) {
-        return null;
+        // check the the bytes
+        if (bytes.length != SIZE) {
+            log.error("input bytes wrong size");
+            throw new RuntimeException("G1Element failed check");
+        }
+        return new GTElement(bytes);
     }
 
     public static GTElement fromBytesUnchecked(byte[] bytes) {
-        return null;
+        return new GTElement(bytes);
     }
 
-    public static GTElement unity() {
-        return null;
+    public GTElement unity() {
+        // Set GTElement to the identity element
+        this.gt_element = BigInteger.ZERO;
+        return this;
     }
 
     public void serialize(byte[] buffer) {
-
+        Point curve_point = Conversion.octetToCurvePointG2(buffer, true);
+        byte[] serialized = Conversion.curvePointToOctetG2(curve_point);
     }
 
     public byte[] serialize() {
-        return null;
+        Point curve_point = Conversion.octetToCurvePointG1(this.gt_element.toByteArray(), true);
+        return Conversion.curvePointToOctetG1(curve_point);
     }
 
 }
