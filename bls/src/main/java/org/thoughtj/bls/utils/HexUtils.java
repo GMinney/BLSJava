@@ -2,6 +2,9 @@ package org.thoughtj.bls.utils;
 
 import com.google.common.io.BaseEncoding;
 
+import java.math.BigInteger;
+import java.nio.ByteBuffer;
+
 public class HexUtils {
     public static final BaseEncoding HEX = BaseEncoding.base16().lowerCase();
 
@@ -31,4 +34,22 @@ public class HexUtils {
     public static String hexStr(byte [] bytes) {
         return HEX.encode(bytes);
     }
+
+    /*
+     * Converts a 32 bit int to bytes.
+     */
+    static byte[] IntToFourBytes(int input) {
+        return ByteBuffer.allocate(4).putInt(input).array();
+    }
+
+    /*
+     * Converts a byte array to a 32 bit int.
+     */
+    static int FourBytesToInt(byte[] bytes) {
+        return ByteBuffer.wrap(bytes).getInt();
+    }
+
 }
+
+
+

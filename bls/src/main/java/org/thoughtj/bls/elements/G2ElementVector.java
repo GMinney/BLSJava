@@ -20,7 +20,7 @@ public class G2ElementVector extends java.util.AbstractList<G2Element> implement
     // Members
     private static Logger log = LoggerFactory.getLogger(G2ElementVector.class);
 
-    G2Element[] g2_element_vector;
+    private G2Element[] g2_element_vector;
 
     // Constructions
 

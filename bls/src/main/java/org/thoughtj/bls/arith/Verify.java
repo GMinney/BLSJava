@@ -98,7 +98,7 @@ public abstract class Verify {
 //
 //        inv0(x) := x^(q - 2).
         // q is the order
-        return element.modInverse(Params.G1_CONST_R);
+        return element.modInverse(Params.BLS_CURVE_ORDER_R);
     }
 
 
@@ -110,7 +110,7 @@ public abstract class Verify {
 //    is_square(x) := { True,  if x^((q - 1) / 2) is 0 or 1 in F;
 //        { False, otherwise.
 //
-        BigInteger square = element.modPow(Params.G1_CONST_R.subtract(BigInteger.valueOf(1)), Params.EMBEDDING_DEGREE);
+        BigInteger square = element.modPow(Params.BLS_CURVE_ORDER_R.subtract(BigInteger.valueOf(1)), Params.EMBEDDING_DEGREE);
         BigInteger zero = BigInteger.valueOf(0);
         BigInteger one = BigInteger.valueOf(1);
         return square.equals(zero) || square.equals(one);

@@ -16,10 +16,8 @@ public class G1Element {
     // A G1Element is a public key that is 96 bytes in size or 768 bits in uncompressed form
     public final static int SIZE = 48;
 
-    private static Logger log = LoggerFactory.getLogger(PrivateKey.class);
+    private static Logger log = LoggerFactory.getLogger(G1Element.class);
     private BigInteger g1_element;
-
-    // Force use of static constructors
     private G1Element() {
         this.g1_element = new BigInteger(ByteBuffer.allocate(SIZE).array());
     }
