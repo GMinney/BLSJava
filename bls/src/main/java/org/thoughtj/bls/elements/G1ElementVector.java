@@ -2,6 +2,7 @@ package org.thoughtj.bls.elements;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.thoughtj.bls.utils.Uint8Vector;
 
 import java.math.BigInteger;
 import java.nio.ByteBuffer;
@@ -126,6 +127,21 @@ public class G1ElementVector extends java.util.AbstractList<G1Element> implement
         return this.g1_element_vector[index];
     }
 
+    private byte[][] doGetBytes() {
+        // get a 2d-byte array from this uint8_vector
+        if (g1_element_vector == null) {
+            throw new RuntimeException("G1ElementVector is null");
+        }
+        int length = g1_element_vector.length;
+        G1Element[] g1vector = this.g1_element_vector;
+        byte[][] out = new byte[length][];
+
+        for (int i = 0; i < length; i++) {
+            out[i] = g1vector[i].serialize();
+        }
+        return out;
+    }
+
     private G1Element doSet(int index, G1Element val) {
         // set a G1Element from this g1_element_vector
         if (g1_element_vector == null) {
@@ -154,6 +170,10 @@ public class G1ElementVector extends java.util.AbstractList<G1Element> implement
 
     public G1Element get(int index) {
         return doGet(index);
+    }
+
+    public byte[][] getBytes() {
+        return doGetBytes();
     }
 
     public G1Element set(int index, G1Element e) {

@@ -13,10 +13,13 @@ public class G2Element {
     // A G2Element is a signature that is 96 bytes in size or 768 bits in compressed form
     // A G2Element is a signature that is 192 bytes in size or 1536 bits in uncompressed form
     // Relic uses Minimum pubkey sizes and compression - check notes for details
-    public final static int SIZE = 96;
 
+    // Members
+
+    public final static int SIZE = 96;
     private static Logger log = LoggerFactory.getLogger(G2Element.class);
     private BigInteger g2_element;
+    private BigInteger r_value;
 
     // Constructors
     public G2Element() {
@@ -68,6 +71,13 @@ public class G2Element {
         return new G2Element(message);
     }
 
+    public static G2Element fromNative(BigInteger element) {
+        return G2Element.fromBytes(element.toByteArray());
+    }
+
+    public BigInteger toNative() {
+        return this.g2_element;
+    }
 
     // Functions and Methods
     public static G2Element generator() {
@@ -104,8 +114,6 @@ public class G2Element {
         Point curve_point = Conversion.octetToCurvePointG2(this.g2_element.toByteArray(), true);
         return Conversion.curvePointToOctetG1(curve_point);
     }
-
-
 
 }
 

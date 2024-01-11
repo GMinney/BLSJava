@@ -32,7 +32,7 @@ public class Uint8VectorVector extends java.util.AbstractList<Uint8Vector> imple
         // add each Uint8Vector from vector to array
         for (int i = 0; i < count; i++) {
             int offset = i * Uint8Vector.SIZE;
-            Uint8Vector item = Uint8Vector.fromBytes(ByteBuffer.wrap(other_vector, offset, Uint8Vector.SIZE).array());
+            Uint8Vector item = new Uint8Vector(ByteBuffer.wrap(other_vector, offset, Uint8Vector.SIZE).array());
             this.uint8_vector_vector[i] = item;
         }
     }
@@ -123,6 +123,21 @@ public class Uint8VectorVector extends java.util.AbstractList<Uint8Vector> imple
         return this.uint8_vector_vector[index];
     }
 
+    private byte[][] doGetBytes() {
+        // get a 2d-byte array from this uint8_vector
+        if (uint8_vector_vector == null) {
+            throw new RuntimeException("Uint8VectorVector is null");
+        }
+        int length = uint8_vector_vector.length;
+        Uint8Vector[] vectorvector = this.uint8_vector_vector;
+        byte[][] out = new byte[length][];
+
+        for (int i = 0; i < length; i++) {
+            out[i] = vectorvector[i].toByteArray();
+        }
+        return out;
+    }
+
     private Uint8Vector doSet(int index, Uint8Vector val) {
         // set a Uint8Vector from this uint8_vector
         if (uint8_vector_vector == null) {
@@ -150,6 +165,10 @@ public class Uint8VectorVector extends java.util.AbstractList<Uint8Vector> imple
 
     public Uint8Vector get(int index) {
         return doGet(index);
+    }
+
+    public byte[][] getBytes() {
+        return doGetBytes();
     }
 
     public Uint8Vector set(int index, Uint8Vector e) {

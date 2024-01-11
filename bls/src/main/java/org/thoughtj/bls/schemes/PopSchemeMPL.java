@@ -5,142 +5,70 @@ import org.thoughtj.bls.elements.G1ElementVector;
 import org.thoughtj.bls.elements.G2Element;
 import org.thoughtj.bls.keys.PrivateKey;
 import org.thoughtj.bls.utils.Uint8VectorVector;
+import org.thoughtj.bls.arith.*;
+
+import java.math.BigInteger;
 
 public class PopSchemeMPL extends CoreMPL {
-
     // ID: the ciphersuite ID, an ASCII string. The REQUIRED format for this string is
     // "BLS_SIG_" || H2C_SUITE_ID || SC_TAG || "_"
     // https://www.ietf.org/archive/id/draft-irtf-cfrg-bls-signature-05.html#name-ciphersuite-format
     // || refers to a concatenation of params
-
     // CIPHERSUITE_G1 is for minimal size pubkeys denoted by the "G1"
-    protected static final String CIPHERSUITE_G1 = "BLS_SIG_BLS12381G1_XMD:SHA-256_SSWU_RO_POP_";
-
     // CIPHERSUITE_G2 is for minimal size pubkeys denoted by the "G2"
-    protected static final String CIPHERSUITE_G2 = "BLS_SIG_BLS12381G2_XMD:SHA-256_SSWU_RO_POP_";
+    // protected static final String CIPHERSUITE_G2 = "BLS_SIG_BLS12381G2_XMD:SHA-256_SSWU_RO_POP_";
+
+    // Members
+
+    protected static final String CIPHERSUITE_G1 = "BLS_SIG_BLS12381G1_XMD:SHA-256_SSWU_RO_POP_";
 
 
     // Constructor
+
     public PopSchemeMPL() {
-        super();
+        super(CIPHERSUITE_G1);
     }
 
 
-    public static String getCIPHERSUITE_ID() {
-        return CIPHERSUITE_G1; // TODO: Determine which ID is necessary
-    }
+    // Methods and Functions
+
     public G2Element popProve(PrivateKey seckey) {
-
-//        Inputs:
-//        - SK, a secret key in the format output by KeyGen.
-//
-//        Outputs:
-//        - proof, an octet string.
-//
-//        Procedure:
-//        1. PK = SkToPk(SK)
-//        2. Q = hash_pubkey_to_point(PK)
-//        3. R = SK * Q
-//        4. proof = point_to_signature(R)
-//        5. return proof
-
+        BigInteger pubkey = Curve.calcPubKey(new BigInteger(seckey.serialize()));
+        Point signature_point = Conversion.octetToCurvePointG2(seckey.serialize(), true);
+        Point R_value = Curve.scalarMultiplication(pubkey, signature_point);
+        return G2Element.fromBytes(Conversion.curvePointToOctetG2(R_value));
     }
 
     public boolean popVerify(G1Element pubkey, G2Element signature_proof) {
-
-
-//        Inputs:
-//        - PK, a public key in the format output by SkToPk.
-//                - proof, an octet string in the format output by PopProve.
-//
-//        Outputs:
-//        - result, either VALID or INVALID
-//
-//        Procedure:
-//        1. R = signature_to_point(proof)
-//        2. If R is INVALID, return INVALID
-//        3. If signature_subgroup_check(R) is INVALID, return INVALID
-//        4. If KeyValidate(PK) is INVALID, return INVALID
-//        5. xP = pubkey_to_point(PK)
-//        6. Q = hash_pubkey_to_point(PK)
-//        7. C1 = pairing(Q, xP)
-//        8. C2 = pairing(R, P)
-//        9. If C1 == C2, return VALID, else return INVALID
-
+        return CoreAPI.CoreVerify(pubkey.serialize(), pubkey.serialize(), signature_proof.serialize());
     }
 
     public boolean popVerify(byte[] pubkey, byte[] proof) {
-//      For byte array
-//        Inputs:
-//        - PK, a public key in the format output by SkToPk.
-//                - proof, an octet string in the format output by PopProve.
-//
-//        Outputs:
-//        - result, either VALID or INVALID
-//
-//        Procedure:
-//        1. R = signature_to_point(proof)
-//        2. If R is INVALID, return INVALID
-//        3. If signature_subgroup_check(R) is INVALID, return INVALID
-//        4. If KeyValidate(PK) is INVALID, return INVALID
-//        5. xP = pubkey_to_point(PK)
-//        6. Q = hash_pubkey_to_point(PK)
-//        7. C1 = pairing(Q, xP)
-//        8. C2 = pairing(R, P)
-//        9. If C1 == C2, return VALID, else return INVALID
-
+        return CoreAPI.CoreVerify(pubkey, pubkey, proof);
     }
 
     public boolean fastAggregateVerify(G1ElementVector pubkeys, byte[] message, G2Element signature) {
-
-//        Inputs:
-//        - PK_1, ..., PK_n, public keys in the format output by SkToPk.
-//                - message, an octet string.
-//        - signature, an octet string output by Aggregate.
-//
-//                Outputs:
-//        - result, either VALID or INVALID.
-//
-//                Preconditions:
-//        - n >= 1, otherwise return INVALID.
-//                - The caller MUST know a proof of possession for all PK_i, and the
-//        result of evaluating PopVerify on PK_i and this proof MUST be VALID.
-//        See discussion above.
-//
-//                Procedure:
-//        1. aggregate = pubkey_to_point(PK_1)
-//        2. for i in 2, ..., n:
-//        3.     next = pubkey_to_point(PK_i)
-//        4.     aggregate = aggregate + next
-//        5. PK = point_to_pubkey(aggregate)
-//        6. return CoreVerify(PK, message, signature)
-
+        Point aggregate = Conversion.octetToCurvePointG1(pubkeys.get(0).serialize(), true);
+        for (int i = 1; i < pubkeys.size(); i++) {
+            Point next = Conversion.octetToCurvePointG1(pubkeys.get(i).serialize(), true);
+            assert aggregate != null;
+            aggregate = Curve.pointAddition(aggregate, next);
+        }
+        assert aggregate != null;
+        byte[] pubkey = Conversion.curvePointToOctetG1(aggregate);
+        return CoreAPI.CoreVerify(pubkey, message, signature.serialize());
     }
 
     public boolean fastAggregateVerify(Uint8VectorVector pubkeys, byte[] message, byte[] signature) {
-
-//        Inputs:
-//        - PK_1, ..., PK_n, public keys in the format output by SkToPk.
-//                - message, an octet string.
-//        - signature, an octet string output by Aggregate.
-//
-//                Outputs:
-//        - result, either VALID or INVALID.
-//
-//                Preconditions:
-//        - n >= 1, otherwise return INVALID.
-//                - The caller MUST know a proof of possession for all PK_i, and the
-//        result of evaluating PopVerify on PK_i and this proof MUST be VALID.
-//        See discussion above.
-//
-//                Procedure:
-//        1. aggregate = pubkey_to_point(PK_1)
-//        2. for i in 2, ..., n:
-//        3.     next = pubkey_to_point(PK_i)
-//        4.     aggregate = aggregate + next
-//        5. PK = point_to_pubkey(aggregate)
-//        6. return CoreVerify(PK, message, signature)
-
+        Point aggregate = Conversion.octetToCurvePointG1(pubkeys.get(0).toByteArray(), true);
+        for (int i = 1; i < pubkeys.size(); i++) {
+            Point next = Conversion.octetToCurvePointG1(pubkeys.get(i).toByteArray(), true);
+            assert aggregate != null;
+            aggregate = Curve.pointAddition(aggregate, next);
+        }
+        assert aggregate != null;
+        byte[] pubkey = Conversion.curvePointToOctetG1(aggregate);
+        return CoreAPI.CoreVerify(pubkey, message, signature);
     }
 
 }

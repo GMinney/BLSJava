@@ -26,4 +26,5 @@ public class ByteVector extends Uint8Vector {
     public ByteVector(int count, short value) {
         super(count, value);
     }
+
 }

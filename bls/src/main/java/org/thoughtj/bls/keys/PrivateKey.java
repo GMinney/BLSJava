@@ -1,6 +1,7 @@
 package org.thoughtj.bls.keys;
 
 import org.thoughtj.bls.HKDF256;
+import org.thoughtj.bls.arith.Field;
 import org.thoughtj.bls.arith.Mapping;
 import org.thoughtj.bls.arith.Params;
 import org.thoughtj.bls.elements.G1Element;
@@ -21,6 +22,9 @@ public class PrivateKey {
 
     // When this class is instantiated, allocate a 32byte byte array with 0's
     private BigInteger keydata = new BigInteger(ByteBuffer.allocate(PRIVATE_KEY_SIZE).array());
+    boolean fG1CacheValid = false;
+    boolean fG2CacheValid = false;
+
     public final static int PRIVATE_KEY_SIZE = 32;
     private static Logger log = LoggerFactory.getLogger(PrivateKey.class);
 
@@ -33,7 +37,7 @@ public class PrivateKey {
     public PrivateKey(PrivateKey pk){
         pk.checkKeyData();
         allocateKeyData();
-        bn_copy(keydata, privateKey.keydata);
+        this.keydata = pk.keydata;
     }
 
     // Public Functions and Methods
@@ -44,14 +48,14 @@ public class PrivateKey {
         byte[] hmacKey = {66, 76, 83, 32, 112, 114, 105, 118, 97, 116, 101, 32, 107, 101, 121, 32, 115, 101, 101, 100};
         byte[] hash = new byte[PRIVATE_KEY_SIZE];
         // Hash the seed into sk
-        HKDF256.extract(hash, 0, seed.length, hmacKey, hmacKey.length);
+        HKDF256.extract(hash, seed, seed.length, hmacKey, hmacKey.length);
         byte[] pkhash = HKDF256.prk;
 
         // Check that pk is less than curve order via mod arithmetic
         BigInteger order = Params.BLS_CURVE_ORDER_R;
 
 
-        return new PrivateKey(pkhash);
+        return PrivateKey.fromBytes(pkhash);
     }
 
     public static PrivateKey randomPrivateKey() {
@@ -59,11 +63,11 @@ public class PrivateKey {
         BigInteger r = BigInteger.ONE;
         bn_rand(r, RLC_POS, 256);
 
-        PrivateKey k;
-        bn_copy(k.keydata, r);
+        PrivateKey k = new PrivateKey();
+        k.keydata = r;
 
         BigInteger order = Params.BLS_CURVE_ORDER_R;
-        bn_mod_basic(k.keydata, k.keydata, order);
+        k.keydata = k.keydata.mod(order);
         return k;
     }
 
@@ -72,15 +76,14 @@ public class PrivateKey {
             throw new RuntimeException("PrivateKey::FromBytes: Invalid size");
         }
 
-        PrivateKey k = null;
-        bn_read_bin(k.keydata, 0, PrivateKey.PRIVATE_KEY_SIZE);
+        PrivateKey k = new PrivateKey();
 
-        BigInteger order = g1_get_ord(ord);
+        BigInteger order = Params.BLS_CURVE_ORDER_R;
         if (modOrder) {
-            bn_mod_basic(k.keydata, k.keydata, order);
+            k.keydata = k.keydata.mod(order);
         }
         else {
-            if (bn_cmp(k.keydata, order) > 0) {
+            if (k.keydata.compareTo(order) >= 0) {
                 throw new RuntimeException("PrivateKey byte data must be less than the group order");
             }
         }
@@ -88,7 +91,7 @@ public class PrivateKey {
     }
 
     public static PrivateKey fromByteVector(ByteVector bytes, boolean modOrder) {
-        return PrivateKey.fromBytes(Bytes(bytes), modOrder);
+        return PrivateKey.fromBytes(bytes.toByteArray(), modOrder);
     }
 
     public static PrivateKey fromBytes(byte[] bytes) {
@@ -100,14 +103,14 @@ public class PrivateKey {
         if (privateKeys.isEmpty()) {
             throw new RuntimeException("Number of private keys must be at least 1");
         }
-        BigInteger order = g1_get_ord(order);
+        BigInteger order = Params.BLS_CURVE_ORDER_R;
 
-        PrivateKey ret = null;
+        PrivateKey ret = new PrivateKey();
         assert(ret.isZero());
         for (PrivateKey privateKey : privateKeys) {
-            privateKey.checkKeyData();
-            bn_add(ret.keydata, ret.keydata, privateKey.keydata);
-            bn_mod_basic(ret.keydata, ret.keydata, order);
+            privateKey.hasKeyData();
+            ret.keydata = ret.keydata.add(privateKey.keydata);
+            ret.keydata = ret.keydata.mod(order);
         }
         return ret;
     }
@@ -116,35 +119,39 @@ public class PrivateKey {
     // getG1Element returns a Public Key of 48bytes corresponding the Private Key of 32bytes
     public G1Element getG1Element() {
         if (!fG1CacheValid) {
-            CheckKeyData();
-            G1Element p = new G1Element(); // alloc 1
+            hasKeyData();
+            BigInteger p = BigInteger.ONE; // alloc 1
             g1_mul_gen(p, keydata);
 
-            g1Cache = G1Element.fromNative(p);
+            G1Element g1Cache = G1Element.fromNative(p);
             fG1CacheValid = true;
+            return g1Cache;
         }
-        return g1Cache;
+        else {
+            throw new RuntimeException("g1Cache Invalid");
+        }
     }
 
     // getG2Element returns a signature of 96bytes corresponding the Private Key of 32bytes
     public G2Element getG2Element() {
         if (!fG2CacheValid) {
-            checkKeyData();
+            hasKeyData();
             G2Element q = new G2Element(); // alloc 1
             g2_mul_gen(q, keydata);
 
-            g2Cache = G2Element.fromNative(q);
+            G2Element g2Cache = G2Element.fromNative(q);
             fG2CacheValid = true;
+            return g2Cache;
         }
-        return g2Cache;
+        else {
+            throw new RuntimeException("g2CacheInvalid");
+        }
     }
 
     public G2Element getG2Power(G2Element element) {
-        checkKeyData();
-        G2Element q = new G2Element(); // alloc 1
-        element.toNative(q);
-        g2_mul(q, q, keydata);
-
+        hasKeyData();
+        BigInteger fieldElement = element.toNative();
+        BigInteger q = fieldElement.multiply(keydata);
         return G2Element.fromNative(q);
     }
 
@@ -182,20 +189,19 @@ public class PrivateKey {
 
     // Sign a message with a private key and return a G2Element and choose the Legacy scheme is boolean is true
     public G2Element signG2(byte[] msg, long len, byte[] dst, long dst_len, boolean fLegacy) {
-        checkKeyData();
+        hasKeyData();
 
-        G2Element pt = new G2Element();
+        BigInteger pt;
 
         if (fLegacy) {
-            ep2_map_legacy(pt, msg, Params.BLS_MESSAGE_HASH_LEN);
+            pt = ep2_map_legacy(msg, Params.BLS_MESSAGE_HASH_LEN);
 
         } else {
-            ep2_map_dst(pt, msg, len, dst, dst_len);
+            pt = ep2_map_dst(msg, len, dst, dst_len);
         }
 
-        g2_mul(pt, pt, keydata);
-        G2Element ret = G2Element.fromNative(pt);
-        return ret;
+        Field.fieldMultiplication(pt, keydata, Params.BLS_CONST_P);
+        return G2Element.fromNative(pt);
     }
 
     // Sign a message with a private key and return a G2Element

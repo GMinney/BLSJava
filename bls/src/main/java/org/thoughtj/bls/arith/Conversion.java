@@ -20,9 +20,11 @@ public abstract class Conversion {
      * @return Field element as a BigInteger
      */
     public static BigInteger octetToFieldElement (byte[] octets) {
+        //TODO: Fix to spec
         return new BigInteger(octets);
     }
     public static BigInteger octetToFieldElement (byte octet) {
+        //TODO: Fix to spec
         return new BigInteger(String.valueOf(octet));
     }
 

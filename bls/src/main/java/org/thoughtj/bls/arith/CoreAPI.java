@@ -1,6 +1,14 @@
 package org.thoughtj.bls.arith;
 
 import com.google.common.hash.Hashing;
+import org.thoughtj.bls.HKDF256;
+import org.thoughtj.bls.elements.G1Element;
+import org.thoughtj.bls.elements.G1ElementVector;
+import org.thoughtj.bls.elements.G2Element;
+import org.thoughtj.bls.elements.G2ElementVector;
+import org.thoughtj.bls.utils.ByteVector;
+import org.thoughtj.bls.utils.Uint8Vector;
+import org.thoughtj.bls.utils.Uint8VectorVector;
 
 import java.math.BigInteger;
 import java.security.SecureRandom;
@@ -35,6 +43,37 @@ public abstract class CoreAPI {
             6.         return SK
             7.     salt = H(salt)
          */
+        return Hashing.sha512().hashBytes(bytes).asBytes();
+    }
+
+    /**
+     * KeyGen <br>
+     * a key generation algorithm that outputs a secret key SK.
+     * @return
+     */
+    public static byte[] KeyGen(byte[] seed){
+        // Get random bytes
+        // Should probably salt this: Setting salt to the value H("BLS-SIG-KEYGEN-SALT-") (i.e., the hash of an ASCII string comprising 20 octets) results in a KeyGen algorithm that is compatible with version 4
+        SecureRandom r = new SecureRandom();
+        byte[] bytes = new byte[64];
+        r.nextBytes(bytes);
+        // CipherSuite wants SHA-256, thought uses SHA-512
+        // Hash with SHA-512
+        /*
+        Procedure:
+            1. while True:
+            2.     PRK = HKDF-Extract(salt, IKM || I2OSP(0, 1)) HKDF-Extract is as defined in RFC5869
+            3.     OKM = HKDF-Expand(PRK, key_info || I2OSP(L, 2), L) HKDF-Expand is as defined in RFC5869
+            4.     SK = OS2IP(OKM) mod r
+            5.     if SK != 0:
+            6.         return SK
+            7.     salt = H(salt)
+         */
+        HKDF256.extract();
+        byte[] prk = HKDF256.prk;
+        HKDF256.expand();
+
+
         return Hashing.sha512().hashBytes(bytes).asBytes();
     }
 
@@ -92,6 +131,7 @@ public abstract class CoreAPI {
         }
         // return the signature as a byte array
         return curvePointToOctetG2(signature);
+        //TODO: Q isn't used
     }
 
     /**
@@ -122,6 +162,37 @@ public abstract class CoreAPI {
         Point C2 = pairing(R, Params.G1_GENERATOR_POINT); // Use x and y
         return C1 == C2;
     }
+    
+    public static boolean CoreVerifySecure(G1ElementVector vecPublicKeys, G2Element signature, byte[] message, boolean fLegacy){
+
+
+        BigInteger one = BigInteger.ONE;
+        BigInteger[] computedTs = BigInteger.valueOf(vecPublicKeys.size());
+        Uint8VectorVector vecSorted = (vecPublicKeys.size());
+
+        for (int i = 0; i < vecPublicKeys.size(); i++) {
+            bn_new(computedTs[i]);
+            vecSorted[i] = vecPublicKeys[i].serialize(fLegacy);
+        }
+
+        std.sort(vecSorted.begin(), vecSorted.end(), [](const auto& a, const auto& b) -> bool {
+            return std.memcmp(a.data(), b.data(), G1Element.SIZE) < 0;
+        });
+
+        HashPubKeys(computedTs, {vecSorted.begin(), vecSorted.end()});
+
+        G1Element publicKey;
+        for (int i = 0; i < vecSorted.size(); ++i) {
+            G1Element g1 = G1Element.fromBytes(Bytes(vecSorted[i]), fLegacy);
+            publicKey = CoreAggregate({publicKey, g1 * computedTs[i]});
+        }
+
+
+
+        return CoreAggregateVerify(publicKey, message, signature);
+    }
+    
+    
 
     /**
      * CoreAggregate<br>
@@ -129,7 +200,7 @@ public abstract class CoreAPI {
      * @param signatures
      * @return
      */
-    private static byte[] CoreAggregate(byte[][] signatures) {
+    public static byte[] CoreAggregate(byte[][] signatures) {
         // signature_to_point: uses the function octets_to_point_E1 for minimal-signature-size, uses the function octets_to_point_E2 for minimal-pubkey-size
         // Since relic uses minimum public key sizes, we will use the E2 function
         Point aggregate = octetToCurvePointG2(signatures[0], true);
@@ -146,6 +217,43 @@ public abstract class CoreAPI {
         return curvePointToOctetG2(aggregate);
     }
 
+    public static byte[] CoreAggregateSecure(G1ElementVector vecPublicKeys, G2ElementVector vecSignatures, byte[] message, boolean fLegacy) {
+        if (vecSignatures.size() != vecPublicKeys.size()) {
+            throw new RuntimeException("LegacySchemeMPL.AggregateSigs sigs.size() != pubKeys.size()");
+        }
+
+        BigInteger computedTs = new BigInteger[vecPublicKeys.size()];
+        std.vector<std.pair<vector<uint8_t>, const G2Element*>> vecSorted(vecPublicKeys.size());
+        for (int i = 0; i < vecPublicKeys.size(); i++) {
+            bn_new(computedTs[i]);
+            vecSorted[i] = std.make_pair(vecPublicKeys[i].serialize(fLegacy), vecSignatures[i]);
+        }
+        std.sort(vecSorted.begin(), vecSorted.end(), [](const auto& a, const auto& b) {
+            return std.memcmp(a.first.data(), b.first.data(), G1Element.SIZE) < 0;
+        });
+
+        std.vector<Bytes> vecPublicKeyBytes;
+        vecPublicKeyBytes.reserve(vecPublicKeys.size());
+        for (const auto& it : vecSorted) {
+            vecPublicKeyBytes.push_back(Bytes{it.first});
+        }
+
+        HashPubKeys(computedTs, vecPublicKeyBytes);
+
+        // Raise all signatures to power of the corresponding t's and aggregate the results into aggSig
+        // Also accumulates aggregation info for each signature
+        std.vector<G2Element> expSigs;
+        expSigs.reserve(vecSorted.size());
+        for (int i = 0; i < vecSorted.size(); i++) {
+            expSigs.emplace_back(vecSorted[i].second * computedTs[i]);
+        }
+
+        G2Element aggSig = CoreAggregate(expSigs);
+
+
+        return aggSig.serialize();
+    }
+    
     /**
      * CoreAggregateVerify<br>
      * an aggregate verification algorithm that outputs VALID if signature is a valid aggregated<br>
@@ -172,5 +280,34 @@ public abstract class CoreAPI {
         Point C2 = pairing(R, Params.G1_GENERATOR_POINT);
         return C1 == C2;
     }
+
+    public static boolean HashPubKeys(byte[][] computedTs, ByteVector vecPubKeyBytes){
+
+        BigInteger order = Params.BLS_CURVE_ORDER_R;
+
+        Uint8Vector vecBuffer = new Uint8Vector(vecPubKeyBytes.size() * G1Element.SIZE);
+
+        for (int i = 0; i < vecPubKeyBytes.size(); i++) {
+            memcpy(vecBuffer + i * G1Element.SIZE, vecPubKeyBytes[i].begin(), G1Element.SIZE);
+        }
+
+        byte[] pkHash = new byte[32];
+        Util.Hash256(pkHash, vecBuffer, vecPubKeyBytes.size() * G1Element.SIZE);
+        for (int i = 0; i < vecPubKeyBytes.size(); ++i) {
+            byte[] hash[32];
+            byte[] buffer[4 + 32];
+            memset(buffer, 0, 4);
+            // Set first 4 bytes to index, to generate different ts
+            Util.IntToFourBytes(buffer, i);
+            // Set next 32 bytes as the hash of all the public keys
+            std.memcpy(buffer + 4, pkHash, 32);
+            Util.Hash256(hash, buffer, 4 + 32);
+
+            bn_read_bin(computedTs[i], hash, 32);
+            bn_mod_basic(computedTs[i], computedTs[i], order);
+        }
+    }
+
+
 
 }

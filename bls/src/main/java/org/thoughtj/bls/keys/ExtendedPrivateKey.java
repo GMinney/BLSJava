@@ -78,10 +78,10 @@ public class ExtendedPrivateKey {
         // Make sure private key is less than the curve order
         BigInteger order = g1_get_curve_order();
 
-        bn_new(*skBn);
-        bn_read_bin(*skBn, ILeft, PrivateKey::PRIVATE_KEY_SIZE);
-        bn_mod_basic(*skBn, *skBn, order);
-        bn_write_bin(ILeft, PrivateKey::PRIVATE_KEY_SIZE, *skBn);
+        BigInteger skBn = null;
+        bn_read_bin(skBn, ILeft, PrivateKey.PRIVATE_KEY_SIZE);
+        bn_mod_basic(skBn, skBn, order);
+        bn_write_bin(ILeft, PrivateKey.PRIVATE_KEY_SIZE, skBn);
 
 
         // hash seed, left 32 bytes is sk, right is cc
@@ -93,6 +93,7 @@ public class ExtendedPrivateKey {
     }
 
     public static ExtendedPrivateKey fromBytes(byte[] bytes) {
+        //TODO: Decode byte array into components based on indicies
         BigInteger version = BigInteger.valueOf(bytes[0]);
         BigInteger depth;
         BigInteger parentfingerprint;
@@ -151,6 +152,7 @@ public class ExtendedPrivateKey {
         // Fill the input with the required data
         if (hardened) {
             hmacInput = sk.serialize();
+            //TODO: Double check the git on this
             byte[] newbytes = (hmacInput + PrivateKey.PRIVATE_KEY_SIZE, i); // uses utils int to four bytes
         } else {
             System.arraycopy(sk.getG1Element().serialize(false), 0, hmacInput, 0, G1Element.SIZE);
@@ -171,10 +173,11 @@ public class ExtendedPrivateKey {
     }
 
     public ExtendedPublicKey getExtendedPublicKey(boolean fLegacy) {
+        //TODO: Can add to buffer and send via fromBytes, or directly
         byte[] cc = new byte[(int) ExtendedPublicKey.SIZE];
         ByteBuffer buffer = ByteBuffer.wrap(cc);
         buffer.put(version);
-        buffer.put(depth);
+        buffer.put((byte) depth);
         buffer.put(parentFingerprint);
         buffer.put(childNumber);
         byte[] chain_code = chainCode.serialize();
@@ -185,10 +188,11 @@ public class ExtendedPrivateKey {
     }
 
     public ExtendedPublicKey getExtendedPublicKey() {
+        //TODO: Can add to buffer and send via fromBytes, or directly
         byte[] cc = new byte[(int) ExtendedPublicKey.SIZE];
         ByteBuffer buffer = ByteBuffer.wrap(cc);
         buffer.put(version);
-        buffer.put(depth);
+        buffer.put((byte) depth);
         buffer.put(parentFingerprint);
         buffer.put(childNumber);
         byte[] chain_code = chainCode.serialize();

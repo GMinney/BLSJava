@@ -14,11 +14,16 @@ public class G1Element {
 
     // A G1Element is a public key that is 48 bytes in size or 384 bits in compressed form (odd or even byte + x coord )
     // A G1Element is a public key that is 96 bytes in size or 768 bits in uncompressed form
-    public final static int SIZE = 48;
 
+    // Members
+
+    public final static int SIZE = 48;
     private static Logger log = LoggerFactory.getLogger(G1Element.class);
     private BigInteger g1_element;
-    private G1Element() {
+
+    // Constructors
+
+    public G1Element() {
         this.g1_element = new BigInteger(ByteBuffer.allocate(SIZE).array());
     }
 
@@ -67,6 +72,15 @@ public class G1Element {
         // Get the generator element of the BLS12-381 Curve
         return new G1Element(Params.BLS_CONST_P.toByteArray());
     }
+
+    public static G1Element fromNative(BigInteger element) {
+        return G1Element.fromBytes(element.toByteArray());
+    }
+    public BigInteger toNative() {
+        return this.g1_element;
+    }
+
+    // Methods and Functions
 
     public boolean isValid() {
         return CoreAPI.KeyValidate(this.serialize());

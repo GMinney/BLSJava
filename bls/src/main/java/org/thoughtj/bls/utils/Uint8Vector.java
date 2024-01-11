@@ -4,24 +4,29 @@ import java.nio.ByteBuffer;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
-import java.util.Objects;
 
 public class Uint8Vector extends java.util.AbstractList<Short> implements java.util.RandomAccess {
 
     // Members
-    public static final int SIZE = 8;
+
+    public static final int SIZE = 2;
     private Short[] uint8_vector;
+
 
     // Constructors
 
     public Uint8Vector() {
         this.uint8_vector = new Short[1]; //(ByteBuffer.allocate(Uint8Vector.SIZE).array());
     }
+
+    public Uint8Vector(int allocation_size) {
+        this.uint8_vector = new Short[allocation_size]; //(ByteBuffer.allocate(Uint8Vector.SIZE).array());
+    }
     
     public Uint8Vector(byte[] bytes) {
         // split byte array into Uint8Vectors by size
         int modulus = bytes.length % Uint8Vector.SIZE;
-        // check valid
+        // check valid - check for if the provided byte array is not even
         if (modulus != 0){
             throw new RuntimeException("Mod check failed for vector. Not containing Uint8Vectors with valid size");
         }
@@ -30,10 +35,8 @@ public class Uint8Vector extends java.util.AbstractList<Short> implements java.u
         // preallocate array
         this.uint8_vector = new Short[count];
         // add each Uint8Vector from vector to array
-        for (int i = 0; i < count; i++) {
-            int offset = i * SIZE;
-            Short item = Uint8Vector.fromBytes(ByteBuffer.wrap(bytes, offset, SIZE).array());
-            this.uint8_vector[i] = item;
+        for (int i = 0; i < count; i+=2) {
+            this.uint8_vector[i/2] = toShort(bytes[i], bytes[i+1]);
         }
     }
 
@@ -76,6 +79,19 @@ public class Uint8Vector extends java.util.AbstractList<Short> implements java.u
 
 
     // Private Methods and Functions
+
+    private short toShort(byte[] byte_array) {
+        if (byte_array.length != 2) {
+            throw new RuntimeException("byte array to short failed: byte array not length 2");
+        }
+        byte b1 = byte_array[0];
+        byte b2 = byte_array[1];
+        return (short) (b1<<8 | b2 & 0xFF);
+    }
+
+    private short toShort(byte byte1, byte byte2) {
+        return (short) (byte1<<8 | byte2 & 0xFF);
+    }
 
     private int doSize() {
         // get the count of Uint8Vectors from this uint8_vector
@@ -183,7 +199,7 @@ public class Uint8Vector extends java.util.AbstractList<Short> implements java.u
     public int capacity() {
         // public accessor for doSize
         // gets the total room available including unused indices
-        return (int) Arrays.stream(this.uint8_vector).filter(Objects::isNull).count();
+        return (int) Arrays.stream(this.uint8_vector).count();
     }
 
     public void reserve(int n) {
@@ -199,6 +215,29 @@ public class Uint8Vector extends java.util.AbstractList<Short> implements java.u
     public void clear() {
         // public accessor for removing all Uint8Vectors from this uint8_vector
         this.uint8_vector = new Short[0];
+    }
+
+    // 3 times faster than bytebuffers, 9 times slower than jni
+    // from https://stackoverflow.com/questions/10804852/how-to-convert-short-array-to-byte-array
+    public byte[] toByteArray()
+    {
+        Short[] input = this.uint8_vector;
+        int short_index, byte_index;
+        int iterations = input.length;
+
+        byte [] buffer = new byte[input.length * 2];
+
+        short_index = byte_index = 0;
+
+        for(/*NOP*/; short_index != iterations; /*NOP*/)
+        {
+            buffer[byte_index]     = (byte) (input[short_index] & 0x00FF);
+            buffer[byte_index + 1] = (byte) ((input[short_index] & 0xFF00) >> 8);
+
+            ++short_index; byte_index += 2;
+        }
+
+        return buffer;
     }
     
 }

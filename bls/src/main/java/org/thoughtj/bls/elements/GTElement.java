@@ -5,8 +5,11 @@ import org.slf4j.LoggerFactory;
 import org.thoughtj.bls.arith.Conversion;
 import org.thoughtj.bls.arith.Point;
 import org.thoughtj.bls.keys.PrivateKey;
+import org.thoughtj.bls.utils.ByteVector;
 
 import java.math.BigInteger;
+import java.nio.ByteBuffer;
+import java.util.List;
 
 public class GTElement {
 
@@ -17,14 +20,26 @@ public class GTElement {
     // G1, G2: subgroups of E1 and E2 (respectively) having prime order r
     // E1, E2: elliptic curve groups defined over finite fields. This document assumes that E1 has a more compact representation than E2, i.e., because E1 is defined over a smaller field than E2.
 
-    public final static int SIZE = 48;
+    // Members
 
+    public final static int SIZE = 384;
     private static Logger log = LoggerFactory.getLogger(GTElement.class);
     private BigInteger gt_element;
+    private BigInteger r_value;
+
+
+    // Constructors
+
+    private GTElement() {
+
+    }
 
     private GTElement(byte[] element) {
         this.gt_element = new BigInteger(element);
     }
+
+
+    // Public Methods and Functions
 
     public static GTElement fromBytes(byte[] bytes) {
         // check the the bytes
@@ -37,6 +52,21 @@ public class GTElement {
 
     public static GTElement fromBytesUnchecked(byte[] bytes) {
         return new GTElement(bytes);
+    }
+
+    public static GTElement fromNative(GTElement element) {
+        GTElement new_element = new GTElement();
+        new_element.r_value = element.r_value;
+        return new_element;
+    }
+
+    private static GTElement fromByteVector(ByteVector byte_vector) {
+        List<Short> new_list = byte_vector.stream().toList();
+        ByteBuffer buffer = ByteBuffer.wrap(new byte[new_list.size()*2]);
+        for (int i = 0; i < new_list.size(); i++) {
+            buffer.putShort(new_list.get(i));
+        }
+        return GTElement.fromBytes(buffer.array());
     }
 
     public GTElement unity() {

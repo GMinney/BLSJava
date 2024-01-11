@@ -124,6 +124,21 @@ public class G2ElementVector extends java.util.AbstractList<G2Element> implement
         return this.g2_element_vector[index];
     }
 
+    private byte[][] doGetBytes() {
+        // get a 2d-byte array from this uint8_vector
+        if (g2_element_vector == null) {
+            throw new RuntimeException("G1ElementVector is null");
+        }
+        int length = g2_element_vector.length;
+        G2Element[] g2vector = this.g2_element_vector;
+        byte[][] out = new byte[length][];
+
+        for (int i = 0; i < length; i++) {
+            out[i] = g2vector[i].serialize();
+        }
+        return out;
+    }
+
     private G2Element doSet(int index, G2Element val) {
         // set a G2Element from this g2_element_vector
         if (g2_element_vector == null) {
@@ -151,6 +166,10 @@ public class G2ElementVector extends java.util.AbstractList<G2Element> implement
     // Public Functions and Methods
     public G2Element get(int index) {
         return doGet(index);
+    }
+
+    public byte[][] getBytes() {
+        return doGetBytes();
     }
 
     public G2Element set(int index, G2Element e) {
